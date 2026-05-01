@@ -19,8 +19,9 @@
 #'  \item{focal_year}{Principal year to which data refer}
 #'  \item{latitude}{Latitude of the society}
 #'  \item{longitude}{Longitude of the society}
-#'  \item{class_differentiation}{Ordered factor (five levels), extent of class
-#'    differentiation; coded from SCCS270}
+#'  \item{egalitarianism}{Factor, presence/absence of egalitarianism, defined as
+#'    an absence of class-based or wealth-based distinctions in the society;
+#'    coded from SCCS270}
 #'  \item{percent_hunting}{Ordered factor (ten levels), percentage dependence on
 #'    hunting; coded from SCCS204}
 #'  \item{large_game_hunting}{Factor, presence/absence of large game hunting;
@@ -68,9 +69,6 @@ load_dplace_data <- function(dplace_data_url, dplace_societies_url,
   societies <- read.csv(file = dplace_societies_url)
   languages <- read.csv(file = glottolog_languages_url)
   # ordered levels
-  levels_SCCS270 <- c("Absence of distinctions", "Wealth distinctions",
-                      "Elite stratification", "Dual stratification",
-                      "Complex stratification")
   levels_SCCS204 <- c("0-5%", "6-15%", "16-25%", "26-35%", "36-45%", "46-55%",
                       "56-65%", "66-75%", "76-85%", "86-100%")
   levels_SCCS1718 <- c(
@@ -121,6 +119,13 @@ load_dplace_data <- function(dplace_data_url, dplace_societies_url,
     "Active resistance, aiming at revolution"
   )
   # binary categories
+  binary_SCCS270 <- c(
+    "Absence of distinctions" = "Present",
+    "Wealth distinctions"     = "Absent",
+    "Elite stratification"    = "Absent",
+    "Dual stratification"     = "Absent",
+    "Complex stratification"  = "Absent"
+  )
   binary_SCCS10 <- c(
     "Birds or Waterfowl"   = "Absent",
     "Small Mammals"        = "Absent",
@@ -155,7 +160,8 @@ load_dplace_data <- function(dplace_data_url, dplace_societies_url,
       focal_year            = main_focal_year,
       latitude              = Latitude,
       longitude             = Longitude,
-      class_differentiation = ordered(SCCS270, levels = levels_SCCS270),
+      egalitarianism        = ifelse(SCCS270 == "", NA,
+                                     binary_SCCS270[SCCS270]),
       percent_hunting       = ordered(SCCS204, levels = levels_SCCS204),
       large_game_hunting    = ifelse(SCCS10 == "", NA, binary_SCCS10[SCCS10]),
       food_sharing          = ordered(str_to_sentence(SCCS1718),
