@@ -1,1 +1,9 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
+tree_file|stem|097e0a16f1431efe|1de9ec4cb0b83efe|2c530c1562a7fbd1|-419834672|data/tree/dplace.nxs|t20557.9999421296s|s55689082b|55689082|file|local|vector|||0.31||
+dplace_societies_url|stem|c3caf7f2ccd75161|aee14d29acec2be0|2c530c1562a7fbd1|17396771|https://raw.githubusercontent.com/D-PLACE/dplace-cldf/6c2008c187a297d1955b41d8ae80d8e31d404f6c/cldf/societies.csv|t20574.5307163978s||0|url|local|vector|||0||
+dplace_data_url|stem|e0e023be3db9dfae|14e703ec1d8b5d26|2c530c1562a7fbd1|545186855|https://raw.githubusercontent.com/D-PLACE/dplace-cldf/6c2008c187a297d1955b41d8ae80d8e31d404f6c/cldf/data.csv|t20574.530755308s||0|url|local|vector|||0||
+glottolog_languages_url|stem|f18a0e38130eafea|bbd54384d0ebe985|2c530c1562a7fbd1|1513706872|https://raw.githubusercontent.com/glottolog/glottolog-cldf/072ca0d0410039fb8b779be8fc165bac575d2cda/cldf/languages.csv|t20574.5307612259s||0|url|local|vector|||0||
+tree|stem|d3fef94fb1a65efb|7b4ee45d0a45de90|ebd48cae5adb8908|437279712||t20574.5489477009s|s27129434b|27129434|rds|local|vector|||3.541||
+mcc_tree|stem|fdacd01fa545910e|c47da3594f89d0e8|977498bc9f11c640|-2069454262||t20574.5490610241s|s33711b|33711|rds|local|vector|||9.671||
+data|stem|2c604bc20cde6c98|b9cd236e90084022|773195bcef8c1304|33550471||t20574.6185319511s|s9280b|9280|rds|local|vector|||18.921||
+load_dplace_data|function|c3fe288c7bbd0b89
