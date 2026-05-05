@@ -6,7 +6,7 @@
 #' phylogenetic tree.
 #'
 #' @details The dataset produced by this function is a tibble with 181
-#'   observations and 24 variables:
+#'   observations and 23 variables:
 #' \describe{
 #'  \item{soc_id}{Character, society ID}
 #'  \item{xd_id}{Character, cross-dataset ID (see
@@ -28,8 +28,6 @@
 #'    coded from SCCS10}
 #'  \item{food_sharing}{Ordered factor (seven levels), extent of food sharing;
 #'    coded from SCCS1718}
-#'  \item{food_storage}{Ordered factor (five levels), extent of food storage;
-#'    coded from SCCS20}
 #'  \item{starvation_occurrence}{Ordered factor (three levels), occurrence of
 #'    short-term starvation; coded from SCCS1262}
 #'  \item{famine_occurrence}{Ordered factor (four levels), occurrence of famine;
@@ -85,9 +83,6 @@ load_dplace_data <- function(dplace_data_url, dplace_societies_url,
     ),
     "Sharing of food among other than mentioned groups"
   )
-  levels_SCCS20 <- c("None", "Individual households", "Communal facilities",
-                     "Political agent controlled repositories",
-                     "Economic agent controlled repositories")
   levels_SCCS1262 <- c("Very low", "Low", "High")
   levels_SCCS1265 <- c("Very low", "Low", "High", "Very high")
   levels_SCCS1685 <- c(
@@ -170,7 +165,6 @@ load_dplace_data <- function(dplace_data_url, dplace_societies_url,
       large_game_hunting    = ifelse(SCCS10 == "", NA, binary_SCCS10[SCCS10]),
       food_sharing          = ordered(str_to_sentence(SCCS1718),
                                      levels = levels_SCCS1718),
-      food_storage          = ordered(SCCS20, levels = levels_SCCS20),
       starvation_occurrence = ordered(str_to_sentence(SCCS1262),
                                       levels = levels_SCCS1262),
       famine_occurrence     = ordered(str_to_sentence(SCCS1265),
