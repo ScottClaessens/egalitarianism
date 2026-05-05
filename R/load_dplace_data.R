@@ -6,7 +6,7 @@
 #' phylogenetic tree.
 #'
 #' @details The dataset produced by this function is a tibble with 181
-#'   observations and 23 variables:
+#'   observations and 26 variables:
 #' \describe{
 #'  \item{soc_id}{Character, society ID}
 #'  \item{xd_id}{Character, cross-dataset ID (see
@@ -19,6 +19,16 @@
 #'  \item{focal_year}{Principal year to which data refer}
 #'  \item{latitude}{Latitude of the society}
 #'  \item{longitude}{Longitude of the society}
+#'  \item{temperature_variance}{Variance in monthly temperature means; coded
+#'    from the AnnualTemperatureVariance variable}
+#'  \item{temperature_predict}{Information theoretic index indicating the extent
+#'    to which temperature are predictable. Varies between 0 (completely
+#'    unpredictable) and 1 (fully predictable). Coded from the
+#'    TemperaturePredictability variable}
+#'  \item{precipitation_predict}{Information theoretic index indicating the
+#'    extent to which precipitation is predictable. Varies between 0 (completely
+#'    unpredictable) and 1 (fully predictable). Coded from the
+#'    PrecipitationPredictability variable}
 #'  \item{egalitarianism}{Factor, presence/absence of egalitarianism, defined as
 #'    an absence of class-based or wealth-based distinctions in the society;
 #'    coded from SCCS270}
@@ -151,37 +161,40 @@ load_dplace_data <- function(dplace_data_url, dplace_societies_url,
     ) |>
     # retain variables
     transmute(
-      soc_id                = Soc_ID,
-      xd_id                 = xd_id,
-      society               = Name,
-      glottocode            = Glottocode,
-      region                = region,
-      focal_year            = main_focal_year,
-      latitude              = Latitude,
-      longitude             = Longitude,
-      egalitarianism        = ifelse(SCCS270 == "", NA,
-                                     binary_SCCS270[SCCS270]),
-      percent_hunting       = ordered(SCCS204, levels = levels_SCCS204),
-      large_game_hunting    = ifelse(SCCS10 == "", NA, binary_SCCS10[SCCS10]),
-      food_sharing          = ordered(str_to_sentence(SCCS1718),
-                                     levels = levels_SCCS1718),
-      starvation_occurrence = ordered(str_to_sentence(SCCS1262),
-                                      levels = levels_SCCS1262),
-      famine_occurrence     = ordered(str_to_sentence(SCCS1265),
-                                      levels = levels_SCCS1265),
-      resource_problems     = ordered(levels_SCCS1685[SCCS1685],
-                                      levels = unique(levels_SCCS1685)[1:4]),
-      gossip_government     = ifelse(SCCS1789 == "", NA,
-                                     binary_gossip[SCCS1789]),
-      gossip_politics       = ifelse(SCCS1796 == "", NA,
-                                     binary_gossip[SCCS1796]),
-      gossip_family         = ifelse(SCCS1787 == "", NA,
-                                     binary_gossip[SCCS1787]),
-      checks_power          = ordered(SCCS761, levels = levels_SCCS761),
-      remove_leaders        = ordered(SCCS762, levels = levels_SCCS762),
-      political_fission     = ordered(SCCS785, levels = levels_SCCS785),
-      political_violence    = ordered(str_to_sentence(SCCS1739),
-                                      levels = levels_SCCS1739)
+      soc_id                 = Soc_ID,
+      xd_id                  = xd_id,
+      society                = Name,
+      glottocode             = Glottocode,
+      region                 = region,
+      focal_year             = main_focal_year,
+      latitude               = Latitude,
+      longitude              = Longitude,
+      temperature_variance   = parse_number(AnnualTemperatureVariance),
+      temperature_predict    = parse_number(TemperaturePredictability),
+      precipitation_predict  = parse_number(PrecipitationPredictability),
+      egalitarianism         = ifelse(SCCS270 == "", NA,
+                                      binary_SCCS270[SCCS270]),
+      percent_hunting        = ordered(SCCS204, levels = levels_SCCS204),
+      large_game_hunting     = ifelse(SCCS10 == "", NA, binary_SCCS10[SCCS10]),
+      food_sharing           = ordered(str_to_sentence(SCCS1718),
+                                      levels = levels_SCCS1718),
+      starvation_occurrence  = ordered(str_to_sentence(SCCS1262),
+                                       levels = levels_SCCS1262),
+      famine_occurrence      = ordered(str_to_sentence(SCCS1265),
+                                       levels = levels_SCCS1265),
+      resource_problems      = ordered(levels_SCCS1685[SCCS1685],
+                                       levels = unique(levels_SCCS1685)[1:4]),
+      gossip_government      = ifelse(SCCS1789 == "", NA,
+                                      binary_gossip[SCCS1789]),
+      gossip_politics        = ifelse(SCCS1796 == "", NA,
+                                      binary_gossip[SCCS1796]),
+      gossip_family          = ifelse(SCCS1787 == "", NA,
+                                      binary_gossip[SCCS1787]),
+      checks_power           = ordered(SCCS761, levels = levels_SCCS761),
+      remove_leaders         = ordered(SCCS762, levels = levels_SCCS762),
+      political_fission      = ordered(SCCS785, levels = levels_SCCS785),
+      political_violence     = ordered(str_to_sentence(SCCS1739),
+                                       levels = levels_SCCS1739)
     ) |>
     # absent/present as factor
     mutate(
@@ -204,4 +217,5 @@ load_dplace_data <- function(dplace_data_url, dplace_societies_url,
     ) |>
     dplyr::select(soc_id:glottocode, Name, region:political_violence) |>
     rename(language_family = Name)
+
 }
