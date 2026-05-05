@@ -1,5 +1,10 @@
 data {
-  int<lower=0> N;
+
+  // ─────────────────────────────────────────────────────
+  // Observed data
+  // ─────────────────────────────────────────────────────
+
+  int<lower=0> N; // number of societies
   vector[N] temperature_variance;
   vector[N] temperature_predict;
   vector[N] precipitation_predict;
@@ -15,32 +20,94 @@ data {
   array[N] int checks_power;
   array[N] int remove_leaders;
   array[N] int political_fission;
+
+  // ─────────────────────────────────────────────────────
+  // Missing data indicators
+  // ─────────────────────────────────────────────────────
+
+  // numbers of societies with observed data
+  // other variables have complete data
+  int<lower=0> N_obs_large_game;
+  int<lower=0> N_obs_food_sharing;
+  int<lower=0> N_obs_starvation;
+  int<lower=0> N_obs_famine;
+  int<lower=0> N_obs_resource;
+  int<lower=0> N_obs_gossip;
+  int<lower=0> N_obs_checks;
+  int<lower=0> N_obs_remove;
+  int<lower=0> N_obs_fission;
+
+  // indicators for societies with observed data
+  array[N_obs_large_game]   int idx_large_game;
+  array[N_obs_food_sharing] int idx_food_sharing;
+  array[N_obs_starvation]   int idx_starvation;
+  array[N_obs_famine]       int idx_famine;
+  array[N_obs_resource]     int idx_resource;
+  array[N_obs_gossip]       int idx_gossip;
+  array[N_obs_checks]       int idx_checks;
+  array[N_obs_remove]       int idx_remove;
+  array[N_obs_fission]      int idx_fission;
+
+  // ─────────────────────────────────────────────────────
+  // Ignore likelihood?
+  // ─────────────────────────────────────────────────────
+
   int<lower=0, upper=1> prior_only;
+
 }
 
 transformed data {
+
+  // ─────────────────────────────────────────────────────
+  // Log and standardise temperature variance
+  // ─────────────────────────────────────────────────────
+
   vector[N] temperature_variance_log;
   vector[N] temperature_variance_log_std;
-  vector[N] temperature_unpredict;
-  vector[N] precipitation_unpredict;
-  // log and standardise temperature variance
+
   temperature_variance_log = log(temperature_variance);
+
   temperature_variance_log_std =
     (temperature_variance_log - mean(temperature_variance_log)) /
     sd(temperature_variance_log);
-  // reverse climate predictability variables (higher = more unpredictable)
+
+  // ─────────────────────────────────────────────────────
+  // Reverse climate predictability variables
+  // ─────────────────────────────────────────────────────
+
+  vector[N] temperature_unpredict;
+  vector[N] precipitation_unpredict;
+
   temperature_unpredict = 1 - temperature_predict;
   precipitation_unpredict = 1 - precipitation_predict;
+
 }
 
 parameters {
-  // loadings
-  array[8] real lambda;
-  // variances
+
+  // ─────────────────────────────────────────────────────
+  // Factor loadings (lambda)
+  // ─────────────────────────────────────────────────────
+
+  array[10] real lambda;
+
+  // ─────────────────────────────────────────────────────
+  // Variances (sigma) and beta precision (phi) parameters
+  // ─────────────────────────────────────────────────────
+
   real<lower=0> sigma;
-  // beta precision
   array[2] real<lower=0> phi;
-  // ordinal cutpoints
+
+  // ─────────────────────────────────────────────────────
+  // Regression coefficients (beta)
+  // ─────────────────────────────────────────────────────
+
+  array[3] real beta;
+
+  // ─────────────────────────────────────────────────────
+  // Ordered cutpoint parameters
+  // ─────────────────────────────────────────────────────
+
   ordered[9] c1;
   ordered[6] c2;
   ordered[2] c3;
@@ -49,21 +116,32 @@ parameters {
   ordered[3] c6;
   ordered[3] c7;
   ordered[2] c8;
-  // latent variables
-  array[N] real climate_variation;
-  array[N] real subsistence;
-  array[N] real scarcity;
-  array[N] real public_opinion;
-  array[N] real sanctions;
+
+  // ─────────────────────────────────────────────────────
+  // Latent variables
+  // ─────────────────────────────────────────────────────
+
+  vector[N] climate_variation;
+  vector[N] subsistence;
+  vector[N] scarcity;
+  vector[N] public_opinion;
+  vector[N] sanctions;
+
 }
 
 model {
 
-  // initialise vectors
+  // ─────────────────────────────────────────────────────
+  // Initialise vectors
+  // ─────────────────────────────────────────────────────
+
   vector[N] mu1;
   vector[N] mu2;
 
-  // priors for parameters
+  // ─────────────────────────────────────────────────────
+  // Priors
+  // ─────────────────────────────────────────────────────
+
   lambda ~ normal(1, 0.5);
   sigma  ~ exponential(1);
   phi ~ exponential(1);
@@ -75,71 +153,86 @@ model {
   c6 ~ normal(0, 2);
   c7 ~ normal(0, 2);
   c8 ~ normal(0, 2);
+  beta ~ normal(0, 1);
 
-  // priors for latent variables
+  // ─────────────────────────────────────────────────────
+  // Structural model
+  // ─────────────────────────────────────────────────────
+
   climate_variation ~ normal(0, 1);
-  subsistence ~ normal(0, 1);
-  scarcity ~ normal(0, 1);
   public_opinion ~ normal(0, 1);
   sanctions ~ normal(0, 1);
 
-  // likelihood
+  subsistence ~ normal(beta[1] * climate_variation, 1);
+  scarcity ~ normal(beta[2] * climate_variation + beta[3] * subsistence, 1);
+
   if (!prior_only) {
 
-    for (i in 1:N) {
+    // ─────────────────────────────────────────────────────
+    // Climate variability measurement model
+    // ─────────────────────────────────────────────────────
 
-      // climate variability submodel
-      temperature_variance_log_std[i] ~ normal(1 * climate_variation[i], sigma);
-      mu1[i] = inv_logit(lambda[1] * climate_variation[i]);
-      mu2[i] = inv_logit(lambda[2] * climate_variation[i]);
-      temperature_unpredict[i] ~ beta(
-        mu1[i] * phi[1],
-        (1.0 - mu1[i]) * phi[1]
-      );
-      precipitation_unpredict[i] ~ beta(
-        mu2[i] * phi[2],
-        (1.0 - mu2[i]) * phi[2]
-      );
+    temperature_variance_log_std ~ normal(climate_variation, sigma);
+    mu1 = inv_logit(lambda[1] * climate_variation);
+    mu2 = inv_logit(lambda[2] * climate_variation);
+    temperature_unpredict ~ beta(mu1 * phi[1], (1.0 - mu1) * phi[1]);
+    precipitation_unpredict ~ beta(mu2 * phi[2], (1.0 - mu2) * phi[2]);
 
-      // subsistence submodel
-      percent_hunting[i] ~ ordered_logistic(1 * subsistence[i], c1);
-      if (large_game_hunting[i] != -9999) {
-        large_game_hunting[i] ~ bernoulli_logit(lambda[1] * subsistence[i]);
-      }
-      if (food_sharing[i] != -9999) {
-        food_sharing[i] ~ ordered_logistic(lambda[2] * subsistence[i], c2);
-      }
+    // ─────────────────────────────────────────────────────
+    // Subsistence measurement model
+    // ─────────────────────────────────────────────────────
 
-      // scarcity submodel
-      if (starvation_occurrence[i] != -9999) {
-        starvation_occurrence[i] ~ ordered_logistic(1 * scarcity[i], c3);
-      }
-      if (famine_occurrence[i] != -9999) {
-        famine_occurrence[i] ~ ordered_logistic(lambda[3] * scarcity[i], c4);
-      }
-      if (resource_problems[i] != -9999) {
-        resource_problems[i] ~ ordered_logistic(lambda[4] * scarcity[i], c5);
-      }
+    percent_hunting ~ ordered_logistic(
+      1.0 * subsistence, c1
+    );
+    large_game_hunting[idx_large_game] ~ bernoulli_logit(
+      lambda[3] * subsistence[idx_large_game]
+    );
+    food_sharing[idx_food_sharing] ~ ordered_logistic(
+      lambda[4] * subsistence[idx_food_sharing], c2
+    );
 
-      // gossip submodel
-      if (gossip_government[i] != -9999) {
-        gossip_government[i] ~ bernoulli_logit(1 * public_opinion[i]);
-        gossip_politics[i] ~ bernoulli_logit(lambda[5] * public_opinion[i]);
-        gossip_family[i] ~ bernoulli_logit(lambda[6] * public_opinion[i]);
-      }
+    // ─────────────────────────────────────────────────────
+    // Scarcity measurement model
+    // ─────────────────────────────────────────────────────
 
-      // sanctions submodel
-      if (checks_power[i] != -9999) {
-        checks_power[i] ~ ordered_logistic(1 * sanctions[i], c6);
-      }
-      if (remove_leaders[i] != -9999) {
-        remove_leaders[i] ~ ordered_logistic(lambda[7] * sanctions[i], c7);
-      }
-      if (political_fission[i] != -9999) {
-        political_fission[i] ~ ordered_logistic(lambda[8] * sanctions[i], c8);
-      }
+    starvation_occurrence[idx_starvation] ~ ordered_logistic(
+      1.0 * scarcity[idx_starvation], c3
+    );
+    famine_occurrence[idx_famine] ~ ordered_logistic(
+      lambda[5] * scarcity[idx_famine], c4
+    );
+    resource_problems[idx_resource] ~ ordered_logistic(
+      lambda[6] * scarcity[idx_resource], c5
+    );
 
-    }
+    // ─────────────────────────────────────────────────────
+    // Public opinion measurement model
+    // ─────────────────────────────────────────────────────
+
+    gossip_government[idx_gossip] ~ bernoulli_logit(
+      1.0 * public_opinion[idx_gossip]
+    );
+    gossip_politics[idx_gossip] ~ bernoulli_logit(
+      lambda[7] * public_opinion[idx_gossip]
+    );
+    gossip_family[idx_gossip] ~ bernoulli_logit(
+      lambda[8] * public_opinion[idx_gossip]
+    );
+
+    // ─────────────────────────────────────────────────────
+    // Sanctions measurement model
+    // ─────────────────────────────────────────────────────
+
+    checks_power[idx_checks] ~ ordered_logistic(
+      1.0 * sanctions[idx_checks], c6
+    );
+    remove_leaders[idx_remove] ~ ordered_logistic(
+      lambda[9] * sanctions[idx_remove], c7
+    );
+    political_fission[idx_fission] ~ ordered_logistic(
+      lambda[10] * sanctions[idx_fission], c8
+    );
 
   }
 
