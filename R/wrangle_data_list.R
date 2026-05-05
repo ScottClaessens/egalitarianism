@@ -21,6 +21,11 @@ wrangle_data_list <- function(data) {
   # list for stan
   list(
     N = nrow(data),
+    # climate variables are transformed inside the model
+    temperature_variance  = data$temperature_variance,
+    temperature_predict   = data$temperature_predict,
+    precipitation_predict = data$precipitation_predict,
+    # convert binary and ordinal variables to numeric
     percent_hunting       = convert_ordinal(data$percent_hunting),
     large_game_hunting    = convert_binary(data$large_game_hunting),
     food_sharing          = convert_ordinal(data$food_sharing),
@@ -33,7 +38,7 @@ wrangle_data_list <- function(data) {
     checks_power          = convert_ordinal(data$checks_power),
     remove_leaders        = convert_ordinal(data$remove_leaders),
     political_fission     = convert_ordinal(data$political_fission),
-    prior_only            = 0
+    prior_only            = 0 # ignore the likelihood?
   )
 
 }

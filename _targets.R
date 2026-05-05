@@ -52,6 +52,7 @@ list(
     name = fit,
     stan_files = "stan/model.stan",
     data = data_list,
-    parallel_chains = 4
+    parallel_chains = 4,
+    seed = 1
   )
 )
