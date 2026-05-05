@@ -1,7 +1,7 @@
 library(targets)
 library(tarchetypes)
 
-tar_option_set(packages = c("ape", "tidyverse"))
+tar_option_set(packages = c("ape", "phangorn", "tidyverse"))
 tar_source()
 
 list(

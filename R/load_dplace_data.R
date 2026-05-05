@@ -40,8 +40,8 @@
 #'    colonial affairs; coded from SCCS1789}
 #'  \item{gossip_politics}{Factor, presence/absence of gossip on politics; coded
 #'    from SCCS1796}
-#'  \item{gossip_social_control}{Factor, presence/absence of gossip on social
-#'    control; coded from SCCS1799}
+#'  \item{gossip_family}{Factor, presence/absence of gossip about family; coded
+#'    from SCCS1799}
 #'  \item{checks_power}{Ordered factor (four levels), extent of checks on
 #'    leaders' power; coded from SCCS761}
 #'  \item{remove_leaders}{Ordered factor (four levels), extent of institutions
@@ -177,8 +177,8 @@ load_dplace_data <- function(dplace_data_url, dplace_societies_url,
                                      binary_gossip[SCCS1789]),
       gossip_politics       = ifelse(SCCS1796 == "", NA,
                                      binary_gossip[SCCS1796]),
-      gossip_social_control = ifelse(SCCS1799 == "", NA,
-                                     binary_gossip[SCCS1799]),
+      gossip_family         = ifelse(SCCS1787 == "", NA,
+                                     binary_gossip[SCCS1787]),
       checks_power          = ordered(SCCS761, levels = levels_SCCS761),
       remove_leaders        = ordered(SCCS762, levels = levels_SCCS762),
       political_fission     = ordered(SCCS785, levels = levels_SCCS785),
