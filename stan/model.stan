@@ -142,7 +142,7 @@ model {
   // Priors
   // ─────────────────────────────────────────────────────
 
-  lambda ~ normal(1, 0.5);
+  lambda ~ normal(0, 1);
   sigma  ~ exponential(1);
   phi ~ exponential(1);
   c1 ~ normal(0, 2);
@@ -154,17 +154,11 @@ model {
   c7 ~ normal(0, 2);
   c8 ~ normal(0, 2);
   beta ~ normal(0, 1);
-
-  // ─────────────────────────────────────────────────────
-  // Structural model
-  // ─────────────────────────────────────────────────────
-
   climate_variation ~ normal(0, 1);
   public_opinion ~ normal(0, 1);
   sanctions ~ normal(0, 1);
-
-  subsistence ~ normal(beta[1] * climate_variation, 1);
-  scarcity ~ normal(beta[2] * climate_variation + beta[3] * subsistence, 1);
+  subsistence ~ normal(0, 1);
+  scarcity ~ normal(0, 1);
 
   if (!prior_only) {
 
@@ -172,11 +166,11 @@ model {
     // Climate variability measurement model
     // ─────────────────────────────────────────────────────
 
-    temperature_variance_log_std ~ normal(climate_variation, sigma);
+    temperature_variance_log_std ~ normal(1.0 * climate_variation, sigma);
     mu1 = inv_logit(lambda[1] * climate_variation);
     mu2 = inv_logit(lambda[2] * climate_variation);
-    temperature_unpredict ~ beta(mu1 * phi[1], (1.0 - mu1) * phi[1]);
-    precipitation_unpredict ~ beta(mu2 * phi[2], (1.0 - mu2) * phi[2]);
+    temperature_unpredict ~ beta(mu1 * phi[1], (1.0 - mu1) * phi[1] + 1e-6);
+    precipitation_unpredict ~ beta(mu2 * phi[2], (1.0 - mu2) * phi[2] + 1e-6);
 
     // ─────────────────────────────────────────────────────
     // Subsistence measurement model
