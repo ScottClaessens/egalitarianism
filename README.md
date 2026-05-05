@@ -13,8 +13,10 @@ the following R packages:
 
 ```r
 install.packages(
-  c("tarchetypes", "targets", "tidyverse")
+  c("ape", "cmdstanr", "phangorn", "remotes", 
+    "tarchetypes", "targets", "tidyverse")
 )
+remotes::install_github("ropensci/stantargets")
 ```
 
 ### Execute code

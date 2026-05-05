@@ -1,3 +1,4 @@
+library(stantargets)
 library(targets)
 library(tarchetypes)
 
@@ -43,5 +44,14 @@ list(
       dplace_data_url, dplace_societies_url,
       glottolog_languages_url, mcc_tree
     )
+  ),
+  # get data list for stan
+  tar_target(data_list, wrangle_data_list(data)),
+  # fit model
+  tar_stan_mcmc(
+    name = fit,
+    stan_files = "stan/model.stan",
+    data = data_list,
+    parallel_chains = 4
   )
 )

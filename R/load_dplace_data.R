@@ -64,10 +64,12 @@
 #'
 load_dplace_data <- function(dplace_data_url, dplace_societies_url,
                              glottolog_languages_url, mcc_tree) {
+
   # load csv files
   data <- read.csv(file = dplace_data_url)
   societies <- read.csv(file = dplace_societies_url)
   languages <- read.csv(file = glottolog_languages_url)
+
   # ordered levels
   levels_SCCS204 <- c("0-5%", "6-15%", "16-25%", "26-35%", "36-45%", "46-55%",
                       "56-65%", "66-75%", "76-85%", "86-100%")
@@ -118,6 +120,7 @@ load_dplace_data <- function(dplace_data_url, dplace_societies_url,
     ),
     "Active resistance, aiming at revolution"
   )
+
   # binary categories
   binary_SCCS270 <- c(
     "Absence of distinctions" = "Present",
@@ -138,6 +141,7 @@ load_dplace_data <- function(dplace_data_url, dplace_societies_url,
     "Present, Females Only" = "Present",
     "Present, Males Only"   = "Present"
   )
+
   # wrangle sccs data
   data |>
     # filter to sccs data only
