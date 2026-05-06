@@ -2,7 +2,8 @@ library(stantargets)
 library(targets)
 library(tarchetypes)
 
-tar_option_set(packages = c("ape", "phangorn", "tidyverse"))
+tar_option_set(packages = c("ape", "bayesplot", "patchwork", "phangorn",
+                            "tidyverse"))
 tar_source()
 
 list(
@@ -54,5 +55,10 @@ list(
     data = data_list,
     parallel_chains = 4,
     seed = 1
+  ),
+  # plot posterior predictive check
+  tar_target(
+    plot_pp_check,
+    plot_posterior_predictive_check(data, fit_draws_model)
   )
 )

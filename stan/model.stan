@@ -4,7 +4,7 @@ data {
   // Observed data
   // ─────────────────────────────────────────────────────
 
-  int<lower=0> N; // number of societies
+  int<lower=0> N; // total number of societies
   vector[N] temperature_variance;
   vector[N] temperature_predict;
   vector[N] precipitation_predict;
@@ -22,11 +22,9 @@ data {
   array[N] int political_fission;
 
   // ─────────────────────────────────────────────────────
-  // Missing data indicators
+  // Numbers of societies with observed data
   // ─────────────────────────────────────────────────────
 
-  // numbers of societies with observed data
-  // other variables have complete data
   int<lower=0> N_obs_large_game;
   int<lower=0> N_obs_food_sharing;
   int<lower=0> N_obs_starvation;
@@ -37,7 +35,10 @@ data {
   int<lower=0> N_obs_remove;
   int<lower=0> N_obs_fission;
 
-  // indicators for societies with observed data
+  // ─────────────────────────────────────────────────────
+  // Indicators for societies with observed data
+  // ─────────────────────────────────────────────────────
+
   array[N_obs_large_game]   int idx_large_game;
   array[N_obs_food_sharing] int idx_food_sharing;
   array[N_obs_starvation]   int idx_starvation;
@@ -99,12 +100,6 @@ parameters {
   array[2] real<lower=0> phi;
 
   // ─────────────────────────────────────────────────────
-  // Regression coefficients (beta)
-  // ─────────────────────────────────────────────────────
-
-  array[3] real beta;
-
-  // ─────────────────────────────────────────────────────
   // Ordered cutpoint parameters
   // ─────────────────────────────────────────────────────
 
@@ -153,7 +148,6 @@ model {
   c6 ~ normal(0, 2);
   c7 ~ normal(0, 2);
   c8 ~ normal(0, 2);
-  beta ~ normal(0, 1);
   climate_variation ~ normal(0, 1);
   public_opinion ~ normal(0, 1);
   sanctions ~ normal(0, 1);
@@ -231,4 +225,110 @@ model {
   }
 
 }
+
+generated quantities {
+
+  // ─────────────────────────────────────────────────────
+  // Initialise linear predictors and yrep variables
+  // ─────────────────────────────────────────────────────
+
+  array[N] real mu1;
+  array[N] real mu2;
+  array[N] real temperature_variance_log_std_rep;
+  array[N] real temperature_variance_rep;
+  array[N] real temperature_predict_rep;
+  array[N] real precipitation_predict_rep;
+  array[N] int percent_hunting_rep;
+  array[N] int large_game_hunting_rep;
+  array[N] int food_sharing_rep;
+  array[N] int starvation_occurrence_rep;
+  array[N] int famine_occurrence_rep;
+  array[N] int resource_problems_rep;
+  array[N] int gossip_government_rep;
+  array[N] int gossip_politics_rep;
+  array[N] int gossip_family_rep;
+  array[N] int checks_power_rep;
+  array[N] int remove_leaders_rep;
+  array[N] int political_fission_rep;
+
+  for (i in 1:N) {
+
+    // ─────────────────────────────────────────────────────
+    // Climate variability yrep
+    // ─────────────────────────────────────────────────────
+
+    temperature_variance_log_std_rep[i] =
+      normal_rng(climate_variation[i], sigma);
+
+    temperature_variance_rep[i] =
+      exp(
+        (temperature_variance_log_std_rep[i] * sd(temperature_variance_log)) +
+        mean(temperature_variance_log)
+      );
+
+    mu1[i] = inv_logit(lambda[1] * climate_variation[i]);
+    mu2[i] = inv_logit(lambda[2] * climate_variation[i]);
+
+    temperature_predict_rep[i] =
+      1.0 - beta_rng(mu1[i] * phi[1], (1 - mu1[i]) * phi[1] + 1e-6);
+
+    precipitation_predict_rep[i] =
+      1.0 - beta_rng(mu2[i] * phi[2], (1 - mu2[i]) * phi[2] + 1e-6);
+
+    // ─────────────────────────────────────────────────────
+    // Subsistence yrep
+    // ─────────────────────────────────────────────────────
+
+    percent_hunting_rep[i] =
+      ordered_logistic_rng(subsistence[i], c1);
+
+    large_game_hunting_rep[i] =
+      bernoulli_logit_rng(lambda[3] * subsistence[i]);
+
+    food_sharing_rep[i] =
+      ordered_logistic_rng(lambda[4] * subsistence[i], c2);
+
+    // ─────────────────────────────────────────────────────
+    // Scarcity yrep
+    // ─────────────────────────────────────────────────────
+
+    starvation_occurrence_rep[i] =
+      ordered_logistic_rng(scarcity[i], c3);
+
+    famine_occurrence_rep[i] =
+      ordered_logistic_rng(lambda[5] * scarcity[i], c4);
+
+    resource_problems_rep[i] =
+      ordered_logistic_rng(lambda[6] * scarcity[i], c5);
+
+    // ─────────────────────────────────────────────────────
+    // Public opinion yrep
+    // ─────────────────────────────────────────────────────
+
+    gossip_government_rep[i] =
+      bernoulli_logit_rng(public_opinion[i]);
+
+    gossip_politics_rep[i] =
+      bernoulli_logit_rng(lambda[7] * public_opinion[i]);
+
+    gossip_family_rep[i] =
+      bernoulli_logit_rng(lambda[8] * public_opinion[i]);
+
+    // ─────────────────────────────────────────────────────
+    // Sanctions yrep
+    // ─────────────────────────────────────────────────────
+
+    checks_power_rep[i] =
+      ordered_logistic_rng(sanctions[i], c6);
+
+    remove_leaders_rep[i] =
+      ordered_logistic_rng(lambda[9] * sanctions[i], c7);
+
+    political_fission_rep[i] =
+      ordered_logistic_rng(lambda[10] * sanctions[i], c8);
+
+  }
+
+}
+
 
