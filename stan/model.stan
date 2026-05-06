@@ -99,6 +99,12 @@ parameters {
   array[2] real<lower=0> phi;
 
   // ─────────────────────────────────────────────────────
+  // Regression slope parameters
+  // ─────────────────────────────────────────────────────
+
+  array[3] real beta;
+
+  // ─────────────────────────────────────────────────────
   // Intercepts for non-ordinal variables
   // ─────────────────────────────────────────────────────
 
@@ -145,6 +151,7 @@ model {
   lambda ~ normal(0, 1);
   sigma  ~ exponential(1);
   phi ~ exponential(1);
+  beta ~ normal(0, 1);
   alpha ~ normal(0, 1);
   c1 ~ normal(0, 2);
   c2 ~ normal(0, 2);
@@ -154,11 +161,19 @@ model {
   c6 ~ normal(0, 2);
   c7 ~ normal(0, 2);
   c8 ~ normal(0, 2);
+
+  // ─────────────────────────────────────────────────────
+  // Structural model
+  // ─────────────────────────────────────────────────────
+
+  // exogenous variables
   climate_variation ~ normal(0, 1);
   public_opinion ~ normal(0, 1);
   sanctions ~ normal(0, 1);
-  subsistence ~ normal(0, 1);
-  scarcity ~ normal(0, 1);
+
+  // endogenous variables
+  subsistence ~ normal(beta[1] * climate_variation, 1);
+  scarcity ~ normal(beta[2] * climate_variation + beta[3] * subsistence, 1);
 
   if (!prior_only) {
 
