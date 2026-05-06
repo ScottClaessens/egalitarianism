@@ -46,21 +46,6 @@ list(
       glottolog_languages_url, mcc_tree
     )
   ),
-  # get data list for stan
-  tar_target(data_list, wrangle_data_list(data)),
-  # fit model
-  tar_stan_mcmc(
-    name = fit,
-    stan_files = "stan/model.stan",
-    data = data_list,
-    parallel_chains = 4,
-    seed = 1
-  ),
-  # plot posterior predictive check
-  tar_target(
-    plot_pp_check,
-    plot_posterior_predictive_check(data, fit_draws_model)
-  ),
   # run simulation validation
   tar_stan_mcmc(
     name = sim,
@@ -70,5 +55,20 @@ list(
     seed = 1
   ),
   # plot simulation validation results
-  tar_target(plot_simulation, plot_simulation_results(sim_draws_model))
+  tar_target(plot_simulation, plot_results(sim_draws_model, simulation = TRUE)),
+  # fit model
+  tar_stan_mcmc(
+    name = fit,
+    stan_files = "stan/model.stan",
+    data = wrangle_data_list(data),
+    parallel_chains = 4,
+    seed = 1
+  ),
+  # plot model results
+  tar_target(plot_model, plot_results(fit_draws_model)),
+  # plot posterior predictive check
+  tar_target(
+    plot_pp_check,
+    plot_posterior_predictive_check(data, fit_draws_model)
+  )
 )
