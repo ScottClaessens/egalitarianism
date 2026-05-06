@@ -51,6 +51,7 @@ plot_posterior_predictive_check <- function(data, fit_draws_model) {
                     breaks = c(0.01, 1, 100)),
       plot_pp_check("temperature_predict"),
       plot_pp_check("precipitation_predict"),
+      plot_pp_check("egalitarianism"),
       plot_pp_check("percent_hunting"),
       plot_pp_check("large_game_hunting"),
       plot_pp_check("food_sharing"),

@@ -15,6 +15,15 @@ simulate_data <- function(n = 200) {
   scarcity <- rnorm(n, climate_variation + subsistence)
 
   # ──────────────────────────────────────────────────
+  # Simulate egalitarianism
+  # ──────────────────────────────────────────────────
+
+  egalitarianism <-
+    factor(
+      rbinom(n, 1, plogis(climate_variation + subsistence + scarcity))
+    )
+
+  # ──────────────────────────────────────────────────
   # Simulate indicator variables
   # ──────────────────────────────────────────────────
 
@@ -63,6 +72,7 @@ simulate_data <- function(n = 200) {
     temperature_variance,
     temperature_predict,
     precipitation_predict,
+    egalitarianism,
     percent_hunting,
     large_game_hunting,
     food_sharing,

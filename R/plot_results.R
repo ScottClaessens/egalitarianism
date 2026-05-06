@@ -12,7 +12,10 @@ plot_results <- function(draws_model, simulation = FALSE) {
   betas <- c(
     "Subsistence ~ climate variation",
     "Resource scarcity ~ climate variation",
-    "Resource scarcity ~ subsistence"
+    "Resource scarcity ~ subsistence",
+    "Egalitarianism ~ climate variation",
+    "Egalitarianism ~ subsistence",
+    "Egalitarianism ~ resource scarcity"
   )
 
   # plot

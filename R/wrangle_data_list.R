@@ -26,6 +26,7 @@ wrangle_data_list <- function(data) {
     temperature_variance  = data$temperature_variance,
     temperature_predict   = data$temperature_predict,
     precipitation_predict = data$precipitation_predict,
+    egalitarianism        = convert_binary(data$egalitarianism),
     percent_hunting       = convert_ordinal(data$percent_hunting),
     large_game_hunting    = convert_binary(data$large_game_hunting),
     food_sharing          = convert_ordinal(data$food_sharing),
