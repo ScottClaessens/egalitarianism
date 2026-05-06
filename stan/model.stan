@@ -100,6 +100,12 @@ parameters {
   array[2] real<lower=0> phi;
 
   // ─────────────────────────────────────────────────────
+  // Intercepts for binary variables
+  // ─────────────────────────────────────────────────────
+
+  array[4] real alpha;
+
+  // ─────────────────────────────────────────────────────
   // Ordered cutpoint parameters
   // ─────────────────────────────────────────────────────
 
@@ -140,6 +146,7 @@ model {
   lambda ~ normal(0, 1);
   sigma  ~ exponential(1);
   phi ~ exponential(1);
+  alpha ~ normal(0, 1);
   c1 ~ normal(0, 2);
   c2 ~ normal(0, 2);
   c3 ~ normal(0, 2);
@@ -160,11 +167,15 @@ model {
     // Climate variability measurement model
     // ─────────────────────────────────────────────────────
 
-    temperature_variance_log_std ~ normal(1.0 * climate_variation, sigma);
+    temperature_variance_log_std ~
+      normal(1.0 * climate_variation, sigma);
+
     mu1 = inv_logit(lambda[1] * climate_variation);
     mu2 = inv_logit(lambda[2] * climate_variation);
-    temperature_unpredict ~ beta(mu1 * phi[1], (1.0 - mu1) * phi[1] + 1e-6);
-    precipitation_unpredict ~ beta(mu2 * phi[2], (1.0 - mu2) * phi[2] + 1e-6);
+
+    temperature_unpredict ~ beta(mu1 * phi[1], (1.0 - mu1) * phi[1]);
+
+    precipitation_unpredict ~ beta(mu2 * phi[2], (1.0 - mu2) * phi[2]);
 
     // ─────────────────────────────────────────────────────
     // Subsistence measurement model
@@ -173,9 +184,11 @@ model {
     percent_hunting ~ ordered_logistic(
       1.0 * subsistence, c1
     );
+
     large_game_hunting[idx_large_game] ~ bernoulli_logit(
-      lambda[3] * subsistence[idx_large_game]
+      alpha[1] + lambda[3] * subsistence[idx_large_game]
     );
+
     food_sharing[idx_food_sharing] ~ ordered_logistic(
       lambda[4] * subsistence[idx_food_sharing], c2
     );
@@ -187,9 +200,11 @@ model {
     starvation_occurrence[idx_starvation] ~ ordered_logistic(
       1.0 * scarcity[idx_starvation], c3
     );
+
     famine_occurrence[idx_famine] ~ ordered_logistic(
       lambda[5] * scarcity[idx_famine], c4
     );
+
     resource_problems[idx_resource] ~ ordered_logistic(
       lambda[6] * scarcity[idx_resource], c5
     );
@@ -199,13 +214,15 @@ model {
     // ─────────────────────────────────────────────────────
 
     gossip_government[idx_gossip] ~ bernoulli_logit(
-      1.0 * public_opinion[idx_gossip]
+      alpha[2] + 1.0 * public_opinion[idx_gossip]
     );
+
     gossip_politics[idx_gossip] ~ bernoulli_logit(
-      lambda[7] * public_opinion[idx_gossip]
+      alpha[3] + lambda[7] * public_opinion[idx_gossip]
     );
+
     gossip_family[idx_gossip] ~ bernoulli_logit(
-      lambda[8] * public_opinion[idx_gossip]
+      alpha[4] + lambda[8] * public_opinion[idx_gossip]
     );
 
     // ─────────────────────────────────────────────────────
@@ -215,9 +232,11 @@ model {
     checks_power[idx_checks] ~ ordered_logistic(
       1.0 * sanctions[idx_checks], c6
     );
+
     remove_leaders[idx_remove] ~ ordered_logistic(
       lambda[9] * sanctions[idx_remove], c7
     );
+
     political_fission[idx_fission] ~ ordered_logistic(
       lambda[10] * sanctions[idx_fission], c8
     );
@@ -270,10 +289,10 @@ generated quantities {
     mu2[i] = inv_logit(lambda[2] * climate_variation[i]);
 
     temperature_predict_rep[i] =
-      1.0 - beta_rng(mu1[i] * phi[1], (1 - mu1[i]) * phi[1] + 1e-6);
+      1.0 - beta_rng(mu1[i] * phi[1], (1 - mu1[i]) * phi[1]);
 
     precipitation_predict_rep[i] =
-      1.0 - beta_rng(mu2[i] * phi[2], (1 - mu2[i]) * phi[2] + 1e-6);
+      1.0 - beta_rng(mu2[i] * phi[2], (1 - mu2[i]) * phi[2]);
 
     // ─────────────────────────────────────────────────────
     // Subsistence yrep
@@ -283,7 +302,7 @@ generated quantities {
       ordered_logistic_rng(subsistence[i], c1);
 
     large_game_hunting_rep[i] =
-      bernoulli_logit_rng(lambda[3] * subsistence[i]);
+      bernoulli_logit_rng(alpha[1] + lambda[3] * subsistence[i]);
 
     food_sharing_rep[i] =
       ordered_logistic_rng(lambda[4] * subsistence[i], c2);
@@ -306,13 +325,13 @@ generated quantities {
     // ─────────────────────────────────────────────────────
 
     gossip_government_rep[i] =
-      bernoulli_logit_rng(public_opinion[i]);
+      bernoulli_logit_rng(alpha[2] + public_opinion[i]);
 
     gossip_politics_rep[i] =
-      bernoulli_logit_rng(lambda[7] * public_opinion[i]);
+      bernoulli_logit_rng(alpha[3] + lambda[7] * public_opinion[i]);
 
     gossip_family_rep[i] =
-      bernoulli_logit_rng(lambda[8] * public_opinion[i]);
+      bernoulli_logit_rng(alpha[4] + lambda[8] * public_opinion[i]);
 
     // ─────────────────────────────────────────────────────
     // Sanctions yrep
