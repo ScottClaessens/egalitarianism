@@ -106,7 +106,7 @@ parameters {
   // Regression slope parameters
   // ─────────────────────────────────────────────────────
 
-  array[10] real beta;
+  array[11] real beta;
 
   // ─────────────────────────────────────────────────────
   // Intercepts for non-ordinal variables
@@ -148,6 +148,7 @@ model {
 
   vector[N] mu1;
   vector[N] mu2;
+  vector[N] violence;
 
   // ─────────────────────────────────────────────────────
   // Priors
@@ -182,9 +183,10 @@ model {
     beta[2] * climate_variation + beta[3] * subsistence, 1
   );
 
+  violence = beta[4] * sanctions + beta[5] * public_opinion;
+
   political_violence[idx_violence] ~ ordered_logistic(
-    beta[4] * sanctions[idx_violence] + beta[5] * public_opinion[idx_violence],
-    c1
+    violence[idx_violence], c1
   );
 
   egalitarianism ~ bernoulli_logit(
@@ -193,7 +195,8 @@ model {
     beta[7] * subsistence +
     beta[8] * scarcity +
     beta[9] * sanctions +
-    beta[10] * public_opinion
+    beta[10] * public_opinion +
+    beta[11] * violence
   );
 
   if (!prior_only) {
@@ -288,6 +291,8 @@ generated quantities {
 
   array[N] real mu1;
   array[N] real mu2;
+  array[N] real violence;
+
   array[N] real temperature_variance_log_centered_rep;
   array[N] real temperature_variance_rep;
   array[N] real temperature_predict_rep;
@@ -313,10 +318,8 @@ generated quantities {
     // Political violence yrep
     // ─────────────────────────────────────────────────────
 
-    political_violence_rep[i] =
-      ordered_logistic_rng(
-        beta[4] * sanctions[i] + beta[5] * public_opinion[i], c1
-      );
+    violence[i] = beta[4] * sanctions[i] + beta[5] * public_opinion[i];
+    political_violence_rep[i] = ordered_logistic_rng(violence[i], c1);
 
     // ─────────────────────────────────────────────────────
     // Egalitarianism yrep
@@ -329,7 +332,8 @@ generated quantities {
         beta[7] * subsistence[i] +
         beta[8] * scarcity[i] +
         beta[9] * sanctions[i] +
-        beta[10] * public_opinion[i]
+        beta[10] * public_opinion[i] +
+        beta[11] * violence[i]
       );
 
     // ─────────────────────────────────────────────────────

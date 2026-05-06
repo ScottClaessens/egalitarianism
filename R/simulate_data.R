@@ -2,7 +2,7 @@
 #'
 #' @returns A tibble
 #'
-simulate_data <- function(n = 500) {
+simulate_data <- function(n = 1000) {
 
   # ──────────────────────────────────────────────────
   # Simulate latent variables
@@ -18,9 +18,8 @@ simulate_data <- function(n = 500) {
   # Simulate political violence
   # ──────────────────────────────────────────────────
 
-  political_violence <- ordered(
-    rordlogit(n, sanctions + public_opinion, a = c(-0.1, 0.9))
-  )
+  violence <- sanctions + public_opinion
+  political_violence <- ordered(rordlogit(n, violence, a = c(-0.1, 0.9)))
 
   # ──────────────────────────────────────────────────
   # Simulate egalitarianism
@@ -28,8 +27,13 @@ simulate_data <- function(n = 500) {
 
   egalitarianism <-
     factor(
-      rbinom(n, 1, plogis(climate_variation + subsistence + scarcity +
-                            sanctions + public_opinion))
+      rbinom(
+        n, 1,
+        plogis(
+          climate_variation + subsistence + scarcity + sanctions +
+            public_opinion + violence
+          )
+        )
     )
 
   # ──────────────────────────────────────────────────

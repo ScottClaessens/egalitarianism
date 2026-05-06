@@ -19,7 +19,8 @@ plot_results <- function(draws_model, simulation = FALSE) {
     "Egalitarianism ~ subsistence",
     "Egalitarianism ~ resource scarcity",
     "Egalitarianism ~ sanctions",
-    "Egalitarianism ~ public opinion"
+    "Egalitarianism ~ public opinion",
+    "Egalitarianism ~ political violence"
   )
 
   # plot
@@ -46,7 +47,7 @@ plot_results <- function(draws_model, simulation = FALSE) {
         colour = "red",
         size = 2
       ) +
-      ggtitle("Results of simulation (N = 500)")
+      ggtitle("Results of simulation (N = 1000)")
   } else {
     p <-
       p +
