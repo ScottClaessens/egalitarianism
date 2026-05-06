@@ -60,5 +60,15 @@ list(
   tar_target(
     plot_pp_check,
     plot_posterior_predictive_check(data, fit_draws_model)
-  )
+  ),
+  # run simulation validation
+  tar_stan_mcmc(
+    name = sim,
+    stan_files = "stan/model.stan",
+    data = wrangle_data_list(simulate_data()),
+    parallel_chains = 4,
+    seed = 1
+  ),
+  # plot simulation validation results
+  tar_target(plot_simulation, plot_simulation_results(sim_draws_model))
 )
