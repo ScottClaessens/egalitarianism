@@ -63,7 +63,8 @@ plot_posterior_predictive_check <- function(data, fit_draws_model) {
       plot_pp_check("gossip_family"),
       plot_pp_check("checks_power"),
       plot_pp_check("remove_leaders"),
-      plot_pp_check("political_fission")
+      plot_pp_check("political_fission"),
+      plot_pp_check("political_violence")
     )
 
   # put together

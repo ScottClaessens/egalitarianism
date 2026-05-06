@@ -13,9 +13,13 @@ plot_results <- function(draws_model, simulation = FALSE) {
     "Subsistence ~ climate variation",
     "Resource scarcity ~ climate variation",
     "Resource scarcity ~ subsistence",
+    "Political violence ~ sanctions",
+    "Political violence ~ public opinion",
     "Egalitarianism ~ climate variation",
     "Egalitarianism ~ subsistence",
-    "Egalitarianism ~ resource scarcity"
+    "Egalitarianism ~ resource scarcity",
+    "Egalitarianism ~ sanctions",
+    "Egalitarianism ~ public opinion"
   )
 
   # plot
@@ -42,7 +46,7 @@ plot_results <- function(draws_model, simulation = FALSE) {
         colour = "red",
         size = 2
       ) +
-      ggtitle("Results of simulation (N = 200)")
+      ggtitle("Results of simulation (N = 500)")
   } else {
     p <-
       p +

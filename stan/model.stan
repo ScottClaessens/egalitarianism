@@ -21,6 +21,7 @@ data {
   array[N] int checks_power;
   array[N] int remove_leaders;
   array[N] int political_fission;
+  array[N] int political_violence;
 
   // ─────────────────────────────────────────────────────
   // Numbers of societies with observed data
@@ -35,6 +36,7 @@ data {
   int<lower=0> N_obs_checks;
   int<lower=0> N_obs_remove;
   int<lower=0> N_obs_fission;
+  int<lower=0> N_obs_violence;
 
   // ─────────────────────────────────────────────────────
   // Indicators for societies with observed data
@@ -49,6 +51,7 @@ data {
   array[N_obs_checks]       int idx_checks;
   array[N_obs_remove]       int idx_remove;
   array[N_obs_fission]      int idx_fission;
+  array[N_obs_violence]     int idx_violence;
 
   // ─────────────────────────────────────────────────────
   // Ignore likelihood?
@@ -103,7 +106,7 @@ parameters {
   // Regression slope parameters
   // ─────────────────────────────────────────────────────
 
-  array[6] real beta;
+  array[10] real beta;
 
   // ─────────────────────────────────────────────────────
   // Intercepts for non-ordinal variables
@@ -115,14 +118,15 @@ parameters {
   // Ordered cutpoint parameters
   // ─────────────────────────────────────────────────────
 
-  ordered[9] c1;
-  ordered[6] c2;
-  ordered[2] c3;
-  ordered[3] c4;
+  ordered[2] c1;
+  ordered[9] c2;
+  ordered[6] c3;
+  ordered[2] c4;
   ordered[3] c5;
   ordered[3] c6;
   ordered[3] c7;
-  ordered[2] c8;
+  ordered[3] c8;
+  ordered[2] c9;
 
   // ─────────────────────────────────────────────────────
   // Latent variables
@@ -162,24 +166,35 @@ model {
   c6 ~ normal(0, 2);
   c7 ~ normal(0, 2);
   c8 ~ normal(0, 2);
+  climate_variation ~ normal(0, 1);
+  public_opinion ~ normal(0, 1);
+  sanctions ~ normal(0, 1);
 
   // ─────────────────────────────────────────────────────
   // Structural model
   // ─────────────────────────────────────────────────────
 
-  // exogenous variables
-  climate_variation ~ normal(0, 1);
-  public_opinion ~ normal(0, 1);
-  sanctions ~ normal(0, 1);
-
-  // endogenous variables
-  subsistence ~ normal(beta[1] * climate_variation, 1);
-  scarcity ~ normal(beta[2] * climate_variation + beta[3] * subsistence, 1);
-  egalitarianism ~ bernoulli_logit(
-    alpha[1] + beta[4] * climate_variation + beta[5] * subsistence +
-      beta[6] * scarcity
+  subsistence ~ normal(
+    beta[1] * climate_variation, 1
   );
 
+  scarcity ~ normal(
+    beta[2] * climate_variation + beta[3] * subsistence, 1
+  );
+
+  political_violence[idx_violence] ~ ordered_logistic(
+    beta[4] * sanctions[idx_violence] + beta[5] * public_opinion[idx_violence],
+    c1
+  );
+
+  egalitarianism ~ bernoulli_logit(
+    alpha[1] +
+    beta[6] * climate_variation +
+    beta[7] * subsistence +
+    beta[8] * scarcity +
+    beta[9] * sanctions +
+    beta[10] * public_opinion
+  );
 
   if (!prior_only) {
 
@@ -202,7 +217,7 @@ model {
     // ─────────────────────────────────────────────────────
 
     percent_hunting ~ ordered_logistic(
-      1.0 * subsistence, c1
+      1.0 * subsistence, c2
     );
 
     large_game_hunting[idx_large_game] ~ bernoulli_logit(
@@ -210,7 +225,7 @@ model {
     );
 
     food_sharing[idx_food_sharing] ~ ordered_logistic(
-      lambda[4] * subsistence[idx_food_sharing], c2
+      lambda[4] * subsistence[idx_food_sharing], c3
     );
 
     // ─────────────────────────────────────────────────────
@@ -218,15 +233,15 @@ model {
     // ─────────────────────────────────────────────────────
 
     starvation_occurrence[idx_starvation] ~ ordered_logistic(
-      1.0 * scarcity[idx_starvation], c3
+      1.0 * scarcity[idx_starvation], c4
     );
 
     famine_occurrence[idx_famine] ~ ordered_logistic(
-      lambda[5] * scarcity[idx_famine], c4
+      lambda[5] * scarcity[idx_famine], c5
     );
 
     resource_problems[idx_resource] ~ ordered_logistic(
-      lambda[6] * scarcity[idx_resource], c5
+      lambda[6] * scarcity[idx_resource], c6
     );
 
     // ─────────────────────────────────────────────────────
@@ -250,15 +265,15 @@ model {
     // ─────────────────────────────────────────────────────
 
     checks_power[idx_checks] ~ ordered_logistic(
-      1.0 * sanctions[idx_checks], c6
+      1.0 * sanctions[idx_checks], c7
     );
 
     remove_leaders[idx_remove] ~ ordered_logistic(
-      lambda[9] * sanctions[idx_remove], c7
+      lambda[9] * sanctions[idx_remove], c8
     );
 
     political_fission[idx_fission] ~ ordered_logistic(
-      lambda[10] * sanctions[idx_fission], c8
+      lambda[10] * sanctions[idx_fission], c9
     );
 
   }
@@ -290,8 +305,18 @@ generated quantities {
   array[N] int checks_power_rep;
   array[N] int remove_leaders_rep;
   array[N] int political_fission_rep;
+  array[N] int political_violence_rep;
 
   for (i in 1:N) {
+
+    // ─────────────────────────────────────────────────────
+    // Political violence yrep
+    // ─────────────────────────────────────────────────────
+
+    political_violence_rep[i] =
+      ordered_logistic_rng(
+        beta[4] * sanctions[i] + beta[5] * public_opinion[i], c1
+      );
 
     // ─────────────────────────────────────────────────────
     // Egalitarianism yrep
@@ -299,8 +324,12 @@ generated quantities {
 
     egalitarianism_rep[i] =
       bernoulli_logit_rng(
-        alpha[1] + beta[4] * climate_variation[i] + beta[5] * subsistence[i] +
-          beta[6] * scarcity[i]
+        alpha[1] +
+        beta[6] * climate_variation[i] +
+        beta[7] * subsistence[i] +
+        beta[8] * scarcity[i] +
+        beta[9] * sanctions[i] +
+        beta[10] * public_opinion[i]
       );
 
     // ─────────────────────────────────────────────────────
@@ -330,26 +359,26 @@ generated quantities {
     // ─────────────────────────────────────────────────────
 
     percent_hunting_rep[i] =
-      ordered_logistic_rng(subsistence[i], c1);
+      ordered_logistic_rng(subsistence[i], c2);
 
     large_game_hunting_rep[i] =
       bernoulli_logit_rng(alpha[5] + lambda[3] * subsistence[i]);
 
     food_sharing_rep[i] =
-      ordered_logistic_rng(lambda[4] * subsistence[i], c2);
+      ordered_logistic_rng(lambda[4] * subsistence[i], c3);
 
     // ─────────────────────────────────────────────────────
     // Scarcity yrep
     // ─────────────────────────────────────────────────────
 
     starvation_occurrence_rep[i] =
-      ordered_logistic_rng(scarcity[i], c3);
+      ordered_logistic_rng(scarcity[i], c4);
 
     famine_occurrence_rep[i] =
-      ordered_logistic_rng(lambda[5] * scarcity[i], c4);
+      ordered_logistic_rng(lambda[5] * scarcity[i], c5);
 
     resource_problems_rep[i] =
-      ordered_logistic_rng(lambda[6] * scarcity[i], c5);
+      ordered_logistic_rng(lambda[6] * scarcity[i], c6);
 
     // ─────────────────────────────────────────────────────
     // Public opinion yrep
@@ -369,13 +398,13 @@ generated quantities {
     // ─────────────────────────────────────────────────────
 
     checks_power_rep[i] =
-      ordered_logistic_rng(sanctions[i], c6);
+      ordered_logistic_rng(sanctions[i], c7);
 
     remove_leaders_rep[i] =
-      ordered_logistic_rng(lambda[9] * sanctions[i], c7);
+      ordered_logistic_rng(lambda[9] * sanctions[i], c8);
 
     political_fission_rep[i] =
-      ordered_logistic_rng(lambda[10] * sanctions[i], c8);
+      ordered_logistic_rng(lambda[10] * sanctions[i], c9);
 
   }
 

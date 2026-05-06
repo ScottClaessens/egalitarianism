@@ -39,6 +39,7 @@ wrangle_data_list <- function(data) {
     checks_power          = convert_ordinal(data$checks_power),
     remove_leaders        = convert_ordinal(data$remove_leaders),
     political_fission     = convert_ordinal(data$political_fission),
+    political_violence    = convert_ordinal(data$political_violence),
 
     # counts of observed data
     N_obs_large_game      = sum(!is.na(data$large_game_hunting)),
@@ -50,6 +51,7 @@ wrangle_data_list <- function(data) {
     N_obs_checks          = sum(!is.na(data$checks_power)),
     N_obs_remove          = sum(!is.na(data$remove_leaders)),
     N_obs_fission         = sum(!is.na(data$political_fission)),
+    N_obs_violence        = sum(!is.na(data$political_violence)),
 
     # observed data indicators
     idx_large_game        = which(!is.na(data$large_game_hunting)),
@@ -61,6 +63,7 @@ wrangle_data_list <- function(data) {
     idx_checks            = which(!is.na(data$checks_power)),
     idx_remove            = which(!is.na(data$remove_leaders)),
     idx_fission           = which(!is.na(data$political_fission)),
+    idx_violence          = which(!is.na(data$political_violence)),
 
     # ignore likelihood?
     prior_only            = 0
