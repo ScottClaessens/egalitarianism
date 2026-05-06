@@ -60,17 +60,16 @@ data {
 transformed data {
 
   // ─────────────────────────────────────────────────────
-  // Log and standardise temperature variance
+  // Log and center temperature variance
   // ─────────────────────────────────────────────────────
 
   vector[N] temperature_variance_log;
-  vector[N] temperature_variance_log_std;
+  vector[N] temperature_variance_log_centered;
 
   temperature_variance_log = log(temperature_variance);
 
-  temperature_variance_log_std =
-    (temperature_variance_log - mean(temperature_variance_log)) /
-    sd(temperature_variance_log);
+  temperature_variance_log_centered =
+    temperature_variance_log - mean(temperature_variance_log);
 
   // ─────────────────────────────────────────────────────
   // Reverse climate predictability variables
@@ -167,7 +166,7 @@ model {
     // Climate variability measurement model
     // ─────────────────────────────────────────────────────
 
-    temperature_variance_log_std ~
+    temperature_variance_log_centered ~
       normal(1.0 * climate_variation, sigma);
 
     mu1 = inv_logit(lambda[1] * climate_variation);
@@ -253,7 +252,7 @@ generated quantities {
 
   array[N] real mu1;
   array[N] real mu2;
-  array[N] real temperature_variance_log_std_rep;
+  array[N] real temperature_variance_log_centered_rep;
   array[N] real temperature_variance_rep;
   array[N] real temperature_predict_rep;
   array[N] real precipitation_predict_rep;
@@ -276,12 +275,12 @@ generated quantities {
     // Climate variability yrep
     // ─────────────────────────────────────────────────────
 
-    temperature_variance_log_std_rep[i] =
+    temperature_variance_log_centered_rep[i] =
       normal_rng(climate_variation[i], sigma);
 
     temperature_variance_rep[i] =
       exp(
-        (temperature_variance_log_std_rep[i] * sd(temperature_variance_log)) +
+        temperature_variance_log_centered_rep[i] +
         mean(temperature_variance_log)
       );
 
