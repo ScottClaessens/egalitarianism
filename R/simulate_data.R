@@ -1,8 +1,18 @@
 #' Simulate data for model testing
 #'
+#' @param data Tibble of D-PLACE data
+#' @param slope Numeric. Parameter value used for the regression coefficients
+#'   in the simulation.
+#'
 #' @returns A tibble
 #'
-simulate_data <- function(n = 1000) {
+simulate_data <- function(data, slope = 2) {
+
+  # ──────────────────────────────────────────────────
+  # Set number of societies (same as real data)
+  # ──────────────────────────────────────────────────
+
+  n <- 181
 
   # ──────────────────────────────────────────────────
   # Simulate latent variables
@@ -11,14 +21,14 @@ simulate_data <- function(n = 1000) {
   climate_variation <- rnorm(n)
   public_opinion <- rnorm(n)
   sanctions <- rnorm(n)
-  subsistence <- rnorm(n, climate_variation)
-  scarcity <- rnorm(n, climate_variation + subsistence)
+  subsistence <- rnorm(n, slope * climate_variation)
+  scarcity <- rnorm(n, slope * climate_variation + slope * subsistence)
 
   # ──────────────────────────────────────────────────
   # Simulate political violence
   # ──────────────────────────────────────────────────
 
-  violence <- sanctions + public_opinion
+  violence <- slope * sanctions + slope * public_opinion
   political_violence <- ordered(rordlogit(n, violence, a = c(-0.1, 0.9)))
 
   # ──────────────────────────────────────────────────
@@ -30,8 +40,12 @@ simulate_data <- function(n = 1000) {
       rbinom(
         n, 1,
         plogis(
-          climate_variation + subsistence + scarcity + sanctions +
-            public_opinion + violence
+          slope * climate_variation +
+            slope * subsistence +
+            slope * scarcity +
+            slope * sanctions +
+            slope * public_opinion +
+            slope * violence
           )
         )
     )
@@ -93,6 +107,7 @@ simulate_data <- function(n = 1000) {
   # ──────────────────────────────────────────────────
 
   tibble(
+    xd_id = data$xd_id,
     temperature_variance,
     temperature_predict,
     precipitation_predict,

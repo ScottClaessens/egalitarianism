@@ -50,7 +50,7 @@ list(
   tar_stan_mcmc(
     name = sim,
     stan_files = "stan/model.stan",
-    data = wrangle_data_list(simulate_data()),
+    data = wrangle_data_list(simulate_data(data), mcc_tree),
     parallel_chains = 4,
     seed = 1
   ),
@@ -60,7 +60,7 @@ list(
   tar_stan_mcmc(
     name = fit,
     stan_files = "stan/model.stan",
-    data = wrangle_data_list(data),
+    data = wrangle_data_list(data, mcc_tree),
     parallel_chains = 4,
     seed = 1
   ),

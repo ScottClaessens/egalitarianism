@@ -4,7 +4,7 @@
 #'
 #' @returns Named list
 #'
-wrangle_data_list <- function(data) {
+wrangle_data_list <- function(data, mcc_tree) {
 
   # function to convert binary variables to numeric vector
   convert_binary <- function(x) {
@@ -17,6 +17,16 @@ wrangle_data_list <- function(data) {
     x <- as.numeric(x)
     ifelse(is.na(x), -9999, x)
   }
+
+  # get phylogenetic correlation matrix
+  mcc_tree <- keep.tip(mcc_tree, data$xd_id)
+  cov_phylo <- vcv.phylo(mcc_tree, corr = TRUE)
+
+  # match phylogenetic correlation matrix to dataset order
+  cov_phylo <- cov_phylo[data$xd_id, data$xd_id]
+
+  # get cholesky factor for phylogenetic correlation matrix
+  Lcov_phylo <- chol(cov_phylo)
 
   # list for stan
   list(
@@ -64,6 +74,9 @@ wrangle_data_list <- function(data) {
     idx_remove            = which(!is.na(data$remove_leaders)),
     idx_fission           = which(!is.na(data$political_fission)),
     idx_violence          = which(!is.na(data$political_violence)),
+
+    # cholesky factor for phylogenetic correlation matrix
+    Lcov_phylo            = Lcov_phylo,
 
     # ignore likelihood?
     prior_only            = 0

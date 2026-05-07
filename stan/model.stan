@@ -54,6 +54,12 @@ data {
   array[N_obs_violence]     int idx_violence;
 
   // ─────────────────────────────────────────────────────
+  // Cholesky factor of phylogenetic correlation matrix
+  // ─────────────────────────────────────────────────────
+
+  matrix[N, N] Lcov_phylo;
+
+  // ─────────────────────────────────────────────────────
   // Ignore likelihood?
   // ─────────────────────────────────────────────────────
 
@@ -109,6 +115,12 @@ parameters {
   array[11] real beta;
 
   // ─────────────────────────────────────────────────────
+  // Phylogenetic standard deviations
+  // ─────────────────────────────────────────────────────
+
+  array[4] real<lower=0> sd_phylo;
+
+  // ─────────────────────────────────────────────────────
   // Intercepts for non-ordinal variables
   // ─────────────────────────────────────────────────────
 
@@ -137,6 +149,26 @@ parameters {
   vector[N] scarcity;
   vector[N] public_opinion;
   vector[N] sanctions;
+
+  // ─────────────────────────────────────────────────────
+  // Standardised phylogenetic varying effects
+  // ─────────────────────────────────────────────────────
+
+  array[4] vector[N] z_phylo;
+
+}
+
+transformed parameters {
+
+  // ─────────────────────────────────────────────────────
+  // Phylogenetic varying effects
+  // ─────────────────────────────────────────────────────
+
+  array[4] vector[N] r_phylo;
+
+  for (i in 1:4) {
+    r_phylo[i] = (sd_phylo[i] * (Lcov_phylo * z_phylo[i]));
+  }
 
 }
 
@@ -170,20 +202,24 @@ model {
   climate_variation ~ normal(0, 1);
   public_opinion ~ normal(0, 1);
   sanctions ~ normal(0, 1);
+  sd_phylo ~ exponential(1);
+  for (i in 1:4) {
+    z_phylo[i] ~ normal(0, 1);
+  }
 
   // ─────────────────────────────────────────────────────
   // Structural model
   // ─────────────────────────────────────────────────────
 
   subsistence ~ normal(
-    beta[1] * climate_variation, 1
+    beta[1] * climate_variation + r_phylo[1], 1
   );
 
   scarcity ~ normal(
-    beta[2] * climate_variation + beta[3] * subsistence, 1
+    beta[2] * climate_variation + beta[3] * subsistence + r_phylo[2], 1
   );
 
-  violence = beta[4] * sanctions + beta[5] * public_opinion;
+  violence = beta[4] * sanctions + beta[5] * public_opinion + r_phylo[3];
 
   political_violence[idx_violence] ~ ordered_logistic(
     violence[idx_violence], c1
@@ -196,7 +232,8 @@ model {
     beta[8] * scarcity +
     beta[9] * sanctions +
     beta[10] * public_opinion +
-    beta[11] * violence
+    beta[11] * violence +
+    r_phylo[4]
   );
 
   if (!prior_only) {
@@ -318,7 +355,8 @@ generated quantities {
     // Political violence yrep
     // ─────────────────────────────────────────────────────
 
-    violence[i] = beta[4] * sanctions[i] + beta[5] * public_opinion[i];
+    violence[i] = beta[4] * sanctions[i] + beta[5] * public_opinion[i] +
+      r_phylo[3][i];
     political_violence_rep[i] = ordered_logistic_rng(violence[i], c1);
 
     // ─────────────────────────────────────────────────────
@@ -333,7 +371,8 @@ generated quantities {
         beta[8] * scarcity[i] +
         beta[9] * sanctions[i] +
         beta[10] * public_opinion[i] +
-        beta[11] * violence[i]
+        beta[11] * violence[i] +
+        r_phylo[4][i]
       );
 
     // ─────────────────────────────────────────────────────

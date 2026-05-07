@@ -43,11 +43,11 @@ plot_results <- function(draws_model, simulation = FALSE) {
     p <-
       p +
       geom_point(
-        data = tibble(name = betas, value = 1),
+        data = tibble(name = betas, value = 2),
         colour = "red",
         size = 2
       ) +
-      ggtitle("Results of simulation (N = 1000)")
+      ggtitle("Results of simulation")
   } else {
     p <-
       p +
