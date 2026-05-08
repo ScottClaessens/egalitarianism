@@ -41,12 +41,13 @@ plot_predictive_check <- function(data, draws_model, prior = FALSE) {
     # add x axis scale
     p +
       scale_x_continuous(
-        name = variable,
+        name = get_variable_names()[variable],
         transform = transform,
         limits = limits,
         breaks = breaks,
         labels = scales::label_number()
-      )
+      ) +
+      theme(axis.title.x = element_text(size = 9))
   }
 
   # get list of plots
