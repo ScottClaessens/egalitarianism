@@ -1,6 +1,8 @@
 # get human readable variable names
 get_variable_names <- function() {
   c(
+
+    # dplace variables
     "temperature_variance"   = "Temperature variance",
     "temperature_predict"    = "Temperature predictability",
     "precipitation_predict"  = "Precipitation predictability",
@@ -17,7 +19,15 @@ get_variable_names <- function() {
     "checks_power"           = "Checks on power",
     "remove_leaders"         = "Removal of leaders",
     "political_fission"      = "Political fission",
-    "political_violence"     = "Political violence"
+    "political_violence"     = "Political violence",
+
+    # latent variables
+    "climate_variation"      = "Climate variation",
+    "subsistence"            = "Subsistence",
+    "sanctions"              = "Sanctions",
+    "public_opinion"         = "Public opinion",
+    "scarcity"               = "Resource scarcity"
+
   )
 }
 

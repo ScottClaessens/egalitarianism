@@ -6,7 +6,7 @@ library(tidyverse)
 
 tar_option_set(
   packages = c("ape", "bayesplot", "patchwork", "phangorn", "rnaturalearth",
-               "scales", "sf", "tidyverse")
+               "scales", "sf", "tidybayes", "tidyverse")
 )
 tar_source()
 
@@ -106,5 +106,10 @@ list(
   tar_target(
     plot_posterior_check,
     plot_predictive_check(data, fit_draws_model)
+  ),
+  # plot total causal effects
+  tar_target(
+    plot_total,
+    plot_total_causal_effects(fit_draws_model)
   )
 )

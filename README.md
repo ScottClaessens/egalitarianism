@@ -14,7 +14,7 @@ the following R packages:
 ```r
 install.packages(
   c("ape", "bayesplot", "cmdstanr", "patchwork", "phangorn", "remotes", 
-    "scales", "tarchetypes", "targets", "tidyverse")
+    "scales", "tarchetypes", "targets", "tidybayes", "tidyverse")
 )
 remotes::install_github("ropensci/stantargets")
 ```
