@@ -24,9 +24,9 @@ data {
   // ─────────────────────────────────────────────────────
 
   int<lower=0> N; // total number of societies
-  vector[N] temperature_variance;
-  vector[N] temperature_predict;
-  vector[N] precipitation_predict;
+  vector<lower=0>[N] temperature_variance;
+  vector<lower=0, upper=1>[N] temperature_predict;
+  vector<lower=0, upper=1>[N] precipitation_predict;
   array[N] int egalitarianism;
   array[N] int percent_hunting;
   array[N] int large_game_hunting;
@@ -125,39 +125,39 @@ parameters {
   // Factor loadings (lambda)
   // ─────────────────────────────────────────────────────
 
-  array[10] real<lower=0> lambda;
+  vector<lower=0>[10] lambda;
 
   // ─────────────────────────────────────────────────────
   // Variances (sigma) and beta precision (phi) parameters
   // ─────────────────────────────────────────────────────
 
   real<lower=0> sigma;
-  array[2] real<lower=0> phi;
+  vector<lower=0>[2] phi;
 
   // ─────────────────────────────────────────────────────
   // Regression slope parameters
   // ─────────────────────────────────────────────────────
 
-  array[11] real beta;
+  vector[11] beta;
 
   // ─────────────────────────────────────────────────────
   // Phylogenetic standard deviations
   // ─────────────────────────────────────────────────────
 
-  array[4] real<lower=0> sd_phylo;
+  vector<lower=0>[4] sd_phylo;
 
   // ─────────────────────────────────────────────────────
   // Spatial Gaussian Process SDs and length scales (rho)
   // ─────────────────────────────────────────────────────
 
-  array[4] real<lower=0> sd_spatial;
-  array[4] real<lower=0> rho;
+  vector<lower=0>[4] sd_spatial;
+  vector<lower=0>[4] rho;
 
   // ─────────────────────────────────────────────────────
   // Intercepts for non-ordinal variables
   // ─────────────────────────────────────────────────────
 
-  array[8] real alpha;
+  vector[8] alpha;
 
   // ─────────────────────────────────────────────────────
   // Ordered cutpoint parameters
@@ -222,26 +222,26 @@ model {
   // Priors
   // ─────────────────────────────────────────────────────
 
-  lambda ~ exponential(1);
+  lambda ~ normal(0, 1);
   sigma  ~ exponential(1);
-  phi ~ exponential(1);
+  phi ~ normal(10, 1);
   beta ~ normal(0, 1);
   alpha ~ normal(0, 1);
-  c1 ~ normal(0, 2);
-  c2 ~ normal(0, 2);
-  c3 ~ normal(0, 2);
-  c4 ~ normal(0, 2);
-  c5 ~ normal(0, 2);
-  c6 ~ normal(0, 2);
-  c7 ~ normal(0, 2);
-  c8 ~ normal(0, 2);
-  c9 ~ normal(0, 2);
+  c1 ~ normal(0, 3);
+  c2 ~ normal(0, 3);
+  c3 ~ normal(0, 3);
+  c4 ~ normal(0, 3);
+  c5 ~ normal(0, 3);
+  c6 ~ normal(0, 3);
+  c7 ~ normal(0, 3);
+  c8 ~ normal(0, 3);
+  c9 ~ normal(0, 3);
   climate_variation ~ normal(0, 1);
   public_opinion ~ normal(0, 1);
   sanctions ~ normal(0, 1);
   sd_phylo ~ exponential(2);
   sd_spatial ~ exponential(2);
-  rho ~ exponential(2);
+  rho ~ inv_gamma(5, 5);
   for (i in 1:4) {
     z_phylo[i] ~ normal(0, 1);
     z_spatial[i] ~ normal(0, 1);
@@ -300,9 +300,13 @@ model {
     mu1 = inv_logit(alpha[3] + lambda[1] * climate_variation);
     mu2 = inv_logit(alpha[4] + lambda[2] * climate_variation);
 
-    temperature_unpredict ~ beta(mu1 * phi[1], (1.0 - mu1) * phi[1]);
+    temperature_unpredict ~ beta(
+      mu1 * phi[1] + 1e-06, (1.0 - mu1) * phi[1] + 1e-06
+    );
 
-    precipitation_unpredict ~ beta(mu2 * phi[2], (1.0 - mu2) * phi[2]);
+    precipitation_unpredict ~ beta(
+      mu2 * phi[2] + 1e-06, (1.0 - mu2) * phi[2] + 1e-06
+    );
 
     // ─────────────────────────────────────────────────────
     // Subsistence measurement model
@@ -449,10 +453,10 @@ generated quantities {
     mu2[i] = inv_logit(alpha[4] + lambda[2] * climate_variation[i]);
 
     temperature_predict_rep[i] =
-      1.0 - beta_rng(mu1[i] * phi[1], (1 - mu1[i]) * phi[1]);
+      1.0 - beta_rng(mu1[i] * phi[1] + 1e-06, (1 - mu1[i]) * phi[1] + 1e-06);
 
     precipitation_predict_rep[i] =
-      1.0 - beta_rng(mu2[i] * phi[2], (1 - mu2[i]) * phi[2]);
+      1.0 - beta_rng(mu2[i] * phi[2] + 1e-06, (1 - mu2[i]) * phi[2] + 1e-06);
 
     // ─────────────────────────────────────────────────────
     // Subsistence yrep
