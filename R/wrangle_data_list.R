@@ -1,10 +1,14 @@
 #' Wrangle data list for Stan
 #'
 #' @param data Tibble of D-PLACE data
+#' @param mcc_tree Maximum clade credibility tree
+#' @param prior_only Logical. If \code{FALSE} (default), the model will include
+#'   the likelihood contributions. If \code{TRUE}, the model will ignore the
+#'   likelihood and return the prior.
 #'
 #' @returns Named list
 #'
-wrangle_data_list <- function(data, mcc_tree) {
+wrangle_data_list <- function(data, mcc_tree, prior_only = FALSE) {
 
   # function to convert binary variables to numeric vector
   convert_binary <- function(x) {
@@ -95,7 +99,7 @@ wrangle_data_list <- function(data, mcc_tree) {
     coords                = coords,
 
     # ignore likelihood?
-    prior_only            = 0
+    prior_only            = as.numeric(prior_only)
 
   )
 

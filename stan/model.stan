@@ -266,29 +266,29 @@ model {
     1
   );
 
-  violence =
-    beta[4] * sanctions +
-    beta[5] * public_opinion +
-    r_phylo[3] +
-    r_spatial[3];
-
-  political_violence[idx_violence] ~ ordered_logistic(
-    violence[idx_violence], c1
-  );
-
-  egalitarianism ~ bernoulli_logit(
-    alpha[1] +
-    beta[6] * climate_variation +
-    beta[7] * subsistence +
-    beta[8] * scarcity +
-    beta[9] * sanctions +
-    beta[10] * public_opinion +
-    beta[11] * violence +
-    r_phylo[4] +
-    r_spatial[4]
-  );
-
   if (!prior_only) {
+
+    violence =
+      beta[4] * sanctions +
+      beta[5] * public_opinion +
+      r_phylo[3] +
+      r_spatial[3];
+
+    political_violence[idx_violence] ~ ordered_logistic(
+      violence[idx_violence], c1
+    );
+
+    egalitarianism ~ bernoulli_logit(
+      alpha[1] +
+      beta[6] * climate_variation +
+      beta[7] * subsistence +
+      beta[8] * scarcity +
+      beta[9] * sanctions +
+      beta[10] * public_opinion +
+      beta[11] * violence +
+      r_phylo[4] +
+      r_spatial[4]
+    );
 
     // ─────────────────────────────────────────────────────
     // Climate variability measurement model

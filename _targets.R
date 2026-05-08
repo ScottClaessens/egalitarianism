@@ -3,7 +3,7 @@ library(targets)
 library(tarchetypes)
 
 tar_option_set(packages = c("ape", "bayesplot", "patchwork", "phangorn",
-                            "tidyverse"))
+                            "scales", "tidyverse"))
 tar_source()
 
 list(
@@ -46,6 +46,20 @@ list(
       glottolog_languages_url, mcc_tree
     )
   ),
+  # run prior only model
+  tar_stan_mcmc(
+    name = prior,
+    stan_files = "stan/model.stan",
+    data = wrangle_data_list(data, mcc_tree, prior_only = 1),
+    parallel_chains = 4,
+    adapt_delta = 0.95,
+    seed = 1
+  ),
+  # plot prior predictive check
+  tar_target(
+    plot_prior_check,
+    plot_predictive_check(data, prior_draws_model, prior = TRUE)
+  ),
   # run simulation validation
   tar_stan_mcmc(
     name = sim,
@@ -70,7 +84,7 @@ list(
   tar_target(plot_model, plot_results(fit_draws_model)),
   # plot posterior predictive check
   tar_target(
-    plot_pp_check,
-    plot_posterior_predictive_check(data, fit_draws_model)
+    plot_posterior_check,
+    plot_predictive_check(data, fit_draws_model)
   )
 )
