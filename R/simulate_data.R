@@ -106,25 +106,32 @@ simulate_data <- function(data, slope = 2) {
   # Compile and return dataset
   # ──────────────────────────────────────────────────
 
-  tibble(
-    xd_id = data$xd_id,
-    temperature_variance,
-    temperature_predict,
-    precipitation_predict,
-    egalitarianism,
-    percent_hunting,
-    large_game_hunting,
-    food_sharing,
-    starvation_occurrence,
-    famine_occurrence,
-    resource_problems,
-    gossip_government,
-    gossip_politics,
-    gossip_family,
-    checks_power,
-    remove_leaders,
-    political_fission,
-    political_violence
+  bind_cols(
+    dplyr::select(
+      data,
+      xd_id,
+      latitude,
+      longitude
+    ),
+    tibble(
+      temperature_variance,
+      temperature_predict,
+      precipitation_predict,
+      egalitarianism,
+      percent_hunting,
+      large_game_hunting,
+      food_sharing,
+      starvation_occurrence,
+      famine_occurrence,
+      resource_problems,
+      gossip_government,
+      gossip_politics,
+      gossip_family,
+      checks_power,
+      remove_leaders,
+      political_fission,
+      political_violence
+    )
   )
 
 }

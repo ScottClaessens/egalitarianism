@@ -28,6 +28,19 @@ wrangle_data_list <- function(data, mcc_tree) {
   # get cholesky factor for phylogenetic correlation matrix
   Lcov_phylo <- chol(cov_phylo)
 
+  # get longitude / latitude coordinates in radians
+  xlon <- data$longitude * pi / 180
+  xlat <- data$latitude * pi / 180
+
+  # get x,y,z coordinates on a unit sphere
+  coords <- matrix(nrow = length(xlon), ncol = 3)
+  coords[, 1] <- cos(xlat) * cos(xlon)
+  coords[, 2] <- cos(xlat) * sin(xlon)
+  coords[, 3] <- sin(xlat)
+
+  # normalise x,y,z coordinates so that maximum distance = 1
+  coords <- coords / max(stats::dist(coords))
+
   # list for stan
   list(
 
@@ -77,6 +90,9 @@ wrangle_data_list <- function(data, mcc_tree) {
 
     # cholesky factor for phylogenetic correlation matrix
     Lcov_phylo            = Lcov_phylo,
+
+    # spatial coordinates (x,y,z)
+    coords                = coords,
 
     # ignore likelihood?
     prior_only            = 0

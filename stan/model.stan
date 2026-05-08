@@ -1,3 +1,22 @@
+functions {
+
+  // ─────────────────────────────────────────────────────
+  // Function for computing spatial Gaussian Process with
+  // squared exponential covariance kernel
+  // ─────────────────────────────────────────────────────
+  vector gp_exp_quad(data array[] vector x, real sdgp, real rho, vector zgp) {
+    int N = size(x);
+    matrix[N, N] cov;
+    cov = gp_exp_quad_cov(x, sdgp, rho);
+    for (n in 1:N) {
+      // deal with numerical non-positive-definiteness
+      cov[n, n] += 1e-12;
+    }
+    return cholesky_decompose(cov) * zgp;
+  }
+
+}
+
 data {
 
   // ─────────────────────────────────────────────────────
@@ -60,6 +79,13 @@ data {
   matrix[N, N] Lcov_phylo;
 
   // ─────────────────────────────────────────────────────
+  // Longitude and latitude coordinates converted to unit
+  // sphere (x,y,z) and normalised (maximum distance = 1)
+  // ─────────────────────────────────────────────────────
+
+  array[N] vector[3] coords;
+
+  // ─────────────────────────────────────────────────────
   // Ignore likelihood?
   // ─────────────────────────────────────────────────────
 
@@ -99,7 +125,7 @@ parameters {
   // Factor loadings (lambda)
   // ─────────────────────────────────────────────────────
 
-  array[10] real lambda;
+  array[10] real<lower=0> lambda;
 
   // ─────────────────────────────────────────────────────
   // Variances (sigma) and beta precision (phi) parameters
@@ -119,6 +145,13 @@ parameters {
   // ─────────────────────────────────────────────────────
 
   array[4] real<lower=0> sd_phylo;
+
+  // ─────────────────────────────────────────────────────
+  // Spatial Gaussian Process SDs and length scales (rho)
+  // ─────────────────────────────────────────────────────
+
+  array[4] real<lower=0> sd_spatial;
+  array[4] real<lower=0> rho;
 
   // ─────────────────────────────────────────────────────
   // Intercepts for non-ordinal variables
@@ -151,23 +184,26 @@ parameters {
   vector[N] sanctions;
 
   // ─────────────────────────────────────────────────────
-  // Standardised phylogenetic varying effects
+  // Standardised varying effects
   // ─────────────────────────────────────────────────────
 
   array[4] vector[N] z_phylo;
+  array[4] vector[N] z_spatial;
 
 }
 
 transformed parameters {
 
   // ─────────────────────────────────────────────────────
-  // Phylogenetic varying effects
+  // Phylogenetic and spatial varying effects
   // ─────────────────────────────────────────────────────
 
   array[4] vector[N] r_phylo;
+  array[4] vector[N] r_spatial;
 
   for (i in 1:4) {
     r_phylo[i] = (sd_phylo[i] * (Lcov_phylo * z_phylo[i]));
+    r_spatial[i] = gp_exp_quad(coords, sd_spatial[i], rho[i], z_spatial[i]);
   }
 
 }
@@ -186,7 +222,7 @@ model {
   // Priors
   // ─────────────────────────────────────────────────────
 
-  lambda ~ normal(0, 1);
+  lambda ~ exponential(1);
   sigma  ~ exponential(1);
   phi ~ exponential(1);
   beta ~ normal(0, 1);
@@ -199,12 +235,16 @@ model {
   c6 ~ normal(0, 2);
   c7 ~ normal(0, 2);
   c8 ~ normal(0, 2);
+  c9 ~ normal(0, 2);
   climate_variation ~ normal(0, 1);
   public_opinion ~ normal(0, 1);
   sanctions ~ normal(0, 1);
-  sd_phylo ~ exponential(1);
+  sd_phylo ~ exponential(2);
+  sd_spatial ~ exponential(2);
+  rho ~ exponential(2);
   for (i in 1:4) {
     z_phylo[i] ~ normal(0, 1);
+    z_spatial[i] ~ normal(0, 1);
   }
 
   // ─────────────────────────────────────────────────────
@@ -212,14 +252,25 @@ model {
   // ─────────────────────────────────────────────────────
 
   subsistence ~ normal(
-    beta[1] * climate_variation + r_phylo[1], 1
+    beta[1] * climate_variation +
+    r_phylo[1] +
+    r_spatial[1],
+    1
   );
 
   scarcity ~ normal(
-    beta[2] * climate_variation + beta[3] * subsistence + r_phylo[2], 1
+    beta[2] * climate_variation +
+    beta[3] * subsistence +
+    r_phylo[2] +
+    r_spatial[2],
+    1
   );
 
-  violence = beta[4] * sanctions + beta[5] * public_opinion + r_phylo[3];
+  violence =
+    beta[4] * sanctions +
+    beta[5] * public_opinion +
+    r_phylo[3] +
+    r_spatial[3];
 
   political_violence[idx_violence] ~ ordered_logistic(
     violence[idx_violence], c1
@@ -233,7 +284,8 @@ model {
     beta[9] * sanctions +
     beta[10] * public_opinion +
     beta[11] * violence +
-    r_phylo[4]
+    r_phylo[4] +
+    r_spatial[4]
   );
 
   if (!prior_only) {
@@ -355,8 +407,12 @@ generated quantities {
     // Political violence yrep
     // ─────────────────────────────────────────────────────
 
-    violence[i] = beta[4] * sanctions[i] + beta[5] * public_opinion[i] +
-      r_phylo[3][i];
+    violence[i] =
+      beta[4] * sanctions[i] +
+      beta[5] * public_opinion[i] +
+      r_phylo[3][i] +
+      r_spatial[3][i];
+
     political_violence_rep[i] = ordered_logistic_rng(violence[i], c1);
 
     // ─────────────────────────────────────────────────────
@@ -372,7 +428,8 @@ generated quantities {
         beta[9] * sanctions[i] +
         beta[10] * public_opinion[i] +
         beta[11] * violence[i] +
-        r_phylo[4][i]
+        r_phylo[4][i] +
+        r_spatial[4][i]
       );
 
     // ─────────────────────────────────────────────────────
