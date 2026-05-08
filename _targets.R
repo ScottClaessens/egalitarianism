@@ -46,6 +46,8 @@ list(
       glottolog_languages_url, mcc_tree
     )
   ),
+  # plot variable coverage
+  tar_target(plot_variable_coverage, plot_coverage(data)),
   # run prior only model
   tar_stan_mcmc(
     name = prior,

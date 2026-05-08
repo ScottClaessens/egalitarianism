@@ -9,14 +9,6 @@ data|stem|9650a26981d80ef8|b9cd236e90084022|2d2d4ff271e7a6a9|33550471||t20580.88
 sim_data|stem|e5e026932c8df5d0|a99ec5b8f64ef239|ab353d95d90dd11a|552381520||t20581.4266736483s|s94588b|94588|qs|local|vector|||0.1||
 fit_data|stem|e1dc707bc75cca09|c2058f4b2da3787e|0d3037fea097311a|2045157859||t20581.426674019s|s95847b|95847|qs|local|vector|||0.002||
 prior_data|stem|8e7818b308496144|5e2b5bfded22131c|0d3037fea097311a|-994734073||t20581.4266743527s|s95839b|95839|qs|local|vector|||0.003||
-plot_predictive_check|function|b23674e906ffc8bf
-load_dplace_data|function|2685c23b45da5504
-logistic|function|6d01a7c1fa8ae732
-wrangle_data_list|function|0465b04a5a20e580
-plot_results|function|41704c2ad5e9f5c0
-dordlogit|function|4cc45430dd1048de
-rordlogit|function|c2bf8aba0343f4a5
-simulate_data|function|e9d422dfe6667e9e
 sim_file_model|stem|b5df821d316f4f07|54a560e19a79606d|2c530c1562a7fbd1|-558330087|stan/model.stan|t20581.4802100541s|s22310b|22310|file|local|vector|||0||
 prior_file_model|stem|b5df821d316f4f07|54a560e19a79606d|2c530c1562a7fbd1|989543653|stan/model.stan|t20581.4802100541s|s22310b|22310|file|local|vector|||0||
 fit_file_model|stem|b5df821d316f4f07|54a560e19a79606d|2c530c1562a7fbd1|1720039687|stan/model.stan|t20581.4802100541s|s22310b|22310|file|local|vector|||0||
@@ -36,3 +28,13 @@ plot_simulation|stem|e42d779e7d4bf61e|305596e58c70a8c5|30a8156b684e11a1|-1771439
 plot_posterior_check|stem|4f37d4fa564490cc|1d6a2441d2ec9340|c3c504359fd147a2|-1426939480||t20581.5052754113s|s3384646b|3384646|rds|local|vector|||2.83|Removed 172 rows containing non-finite outside the scale range (`stat_density()`).. Removed 21 rows containing non-finite outside the scale range (`stat_density()`).|
 plot_model|stem|a083b12932513383|7437ecf701bd3661|72ba8d9fdf11eb86|-89675236||t20581.5053481358s|s161765367b|161765367|rds|local|vector|||0.401||
 plot_prior_check|stem|1fbe99af8f05f20f|da41d082bfc26dae|f40ceeeba5263e29|-950111954||t20581.5053935615s|s3392285b|3392285|rds|local|vector|||2.392|Removed 788 rows containing non-finite outside the scale range (`stat_density()`).. Removed 647 rows containing non-finite outside the scale range (`stat_density()`).|
+plot_predictive_check|function|b23674e906ffc8bf
+load_dplace_data|function|2685c23b45da5504
+logistic|function|6d01a7c1fa8ae732
+plot_coverage|function|9e86a28309c29040
+wrangle_data_list|function|0465b04a5a20e580
+plot_results|function|41704c2ad5e9f5c0
+dordlogit|function|4cc45430dd1048de
+rordlogit|function|c2bf8aba0343f4a5
+simulate_data|function|e9d422dfe6667e9e
+plot_variable_coverage|stem|d0ade805a525273b|e7e8eb15db3a5ce3|5d7a78b63011025e|-1271364929||t20581.5499636076s|s432664b|432664|rds|local|vector|||0.168||
