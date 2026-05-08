@@ -1,9 +1,13 @@
+options(tidyverse.quiet = TRUE)
 library(stantargets)
 library(targets)
 library(tarchetypes)
+library(tidyverse)
 
-tar_option_set(packages = c("ape", "bayesplot", "patchwork", "phangorn",
-                            "scales", "tidyverse"))
+tar_option_set(
+  packages = c("ape", "bayesplot", "patchwork", "phangorn", "rnaturalearth",
+               "scales", "sf", "tidyverse")
+)
 tar_source()
 
 list(
@@ -48,6 +52,20 @@ list(
   ),
   # plot variable coverage
   tar_target(plot_variable_coverage, plot_coverage(data)),
+  # plot variables on world map
+  tar_map(
+    values = tibble(
+      variable = c(
+        "temperature_variance", "temperature_predict", "precipitation_predict",
+        "egalitarianism", "percent_hunting", "large_game_hunting",
+        "food_sharing", "starvation_occurrence", "famine_occurrence",
+        "resource_problems", "gossip_government", "gossip_politics",
+        "gossip_family", "checks_power", "remove_leaders", "political_fission",
+        "political_violence"
+      )
+    ),
+    tar_target(plot_map, plot_variable_on_map(data, variable))
+  ),
   # run prior only model
   tar_stan_mcmc(
     name = prior,

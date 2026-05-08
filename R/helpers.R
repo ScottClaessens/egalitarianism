@@ -1,3 +1,26 @@
+# get human readable variable names
+get_variable_names <- function() {
+  c(
+    "temperature_variance"   = "Temperature variance",
+    "temperature_predict"    = "Temperature predictability",
+    "precipitation_predict"  = "Precipitation predictability",
+    "egalitarianism"         = "Egalitarianism",
+    "percent_hunting"        = "Percent hunting",
+    "large_game_hunting"     = "Large game hunting",
+    "food_sharing"           = "Food sharing",
+    "starvation_occurrence"  = "Starvation occurrence",
+    "famine_occurrence"      = "Famine occurrence",
+    "resource_problems"      = "Resource problems",
+    "gossip_government"      = "Gossip about government",
+    "gossip_politics"        = "Gossip about politics",
+    "gossip_family"          = "Gossip about family",
+    "checks_power"           = "Checks on power",
+    "remove_leaders"         = "Removal of leaders",
+    "political_fission"      = "Political fission",
+    "political_violence"     = "Political violence"
+  )
+}
+
 # helper functions from rethinking package
 rordlogit <- function (n, phi = 0, a) {
   a <- c(as.numeric(a), Inf)

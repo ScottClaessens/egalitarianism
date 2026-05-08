@@ -28,13 +28,32 @@ plot_simulation|stem|e42d779e7d4bf61e|305596e58c70a8c5|30a8156b684e11a1|-1771439
 plot_posterior_check|stem|4f37d4fa564490cc|1d6a2441d2ec9340|c3c504359fd147a2|-1426939480||t20581.5052754113s|s3384646b|3384646|rds|local|vector|||2.83|Removed 172 rows containing non-finite outside the scale range (`stat_density()`).. Removed 21 rows containing non-finite outside the scale range (`stat_density()`).|
 plot_model|stem|a083b12932513383|7437ecf701bd3661|72ba8d9fdf11eb86|-89675236||t20581.5053481358s|s161765367b|161765367|rds|local|vector|||0.401||
 plot_prior_check|stem|1fbe99af8f05f20f|da41d082bfc26dae|f40ceeeba5263e29|-950111954||t20581.5053935615s|s3392285b|3392285|rds|local|vector|||2.392|Removed 788 rows containing non-finite outside the scale range (`stat_density()`).. Removed 647 rows containing non-finite outside the scale range (`stat_density()`).|
+plot_variable_coverage|stem|d0ade805a525273b|e7e8eb15db3a5ce3|5d7a78b63011025e|-1271364929||t20581.5499636076s|s432664b|432664|rds|local|vector|||0.168||
+plot_map_temperature_predict|stem|1676dee47338e0c5|531ac8bdb4476642|220cbc0b1103bda9|-1098631217||t20581.6082382693s|s2037312b|2037312|rds|local|vector|||0.242||
+plot_map_gossip_family|stem|a885425796db3ca8|e3e9809807c68407|220cbc0b1103bda9|594741293||t20581.6082427502s|s2076606b|2076606|rds|local|vector|||0.165||
+plot_map_gossip_government|stem|d7d007284bfdbc9e|dea25b46765fac45|220cbc0b1103bda9|1417138469||t20581.6082468285s|s2076608b|2076608|rds|local|vector|||0.123||
+plot_map_large_game_hunting|stem|08da176a5cb3a094|80232dd6f28625b7|220cbc0b1103bda9|-746102112||t20581.6082505624s|s2076606b|2076606|rds|local|vector|||0.114||
+plot_map_temperature_variance|stem|17847b9a5c884c68|827a3633a51ac7eb|220cbc0b1103bda9|1334033397||t20581.6082544488s|s2051024b|2051024|rds|local|vector|||0.115||
+plot_map_checks_power|stem|b77cc8347b4afedc|7b1039b400edf01a|220cbc0b1103bda9|-151133909||t20581.6082584219s|s2076440b|2076440|rds|local|vector|||0.124||
+plot_map_percent_hunting|stem|a6770ec937131920|44c4553854fbaa3d|220cbc0b1103bda9|678531908||t20581.6082621264s|s2076446b|2076446|rds|local|vector|||0.115||
+plot_map_gossip_politics|stem|ddeaeb9708b58da6|855cbe3e81ef68d6|220cbc0b1103bda9|-581559207||t20581.6082657702s|s2076609b|2076609|rds|local|vector|||0.109||
+plot_map_starvation_occurrence|stem|53187022a88cdd6c|8ec5fda199fd5496|220cbc0b1103bda9|-1796578900||t20581.6082698411s|s2076457b|2076457|rds|local|vector|||0.132||
+plot_map_food_sharing|stem|fab0973ae71b65ff|e523227d1019e4e2|220cbc0b1103bda9|-411425507||t20581.6082736647s|s2076443b|2076443|rds|local|vector|||0.121||
+plot_map_political_violence|stem|b9d1b63c0052b91c|178f8a70f64326f6|220cbc0b1103bda9|32427642||t20581.6082774338s|s2076443b|2076443|rds|local|vector|||0.109||
+plot_map_egalitarianism|stem|25986da76edcd55b|5e1bf35d7a49df83|220cbc0b1103bda9|901824332||t20581.6082814831s|s2076589b|2076589|rds|local|vector|||0.137||
+plot_map_resource_problems|stem|64ba124f89f4e1f6|def24d858aca28f8|220cbc0b1103bda9|1568186110||t20581.6082853549s|s2076445b|2076445|rds|local|vector|||0.124||
+plot_map_famine_occurrence|stem|7cd46761ff97e067|e8ac3d746b4d6ae5|220cbc0b1103bda9|-948274869||t20581.6082906529s|s2076452b|2076452|rds|local|vector|||0.11||
+plot_map_remove_leaders|stem|0aa301cdf4c0014c|300ac9033112c3e8|220cbc0b1103bda9|-358290041||t20581.6082944984s|s2076445b|2076445|rds|local|vector|||0.114||
+plot_map_political_fission|stem|ce300a54b6c43ce7|28b4b9c3c661969a|220cbc0b1103bda9|1912013227||t20581.6082982403s|s2076446b|2076446|rds|local|vector|||0.115||
+plot_map_precipitation_predict|stem|d617a15a756eb4c4|b302af96987f1d7d|220cbc0b1103bda9|2029250293||t20581.6083020071s|s2051043b|2051043|rds|local|vector|||0.118||
+get_variable_names|function|06ffdc97d60ec580
 plot_predictive_check|function|b23674e906ffc8bf
 load_dplace_data|function|2685c23b45da5504
 logistic|function|6d01a7c1fa8ae732
 plot_coverage|function|9e86a28309c29040
 wrangle_data_list|function|0465b04a5a20e580
 plot_results|function|41704c2ad5e9f5c0
+plot_variable_on_map|function|d0ebd4ecc506cf8b
 dordlogit|function|4cc45430dd1048de
 rordlogit|function|c2bf8aba0343f4a5
 simulate_data|function|e9d422dfe6667e9e
-plot_variable_coverage|stem|d0ade805a525273b|e7e8eb15db3a5ce3|5d7a78b63011025e|-1271364929||t20581.5499636076s|s432664b|432664|rds|local|vector|||0.168||
