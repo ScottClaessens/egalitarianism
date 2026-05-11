@@ -15,6 +15,18 @@ functions {
     return cholesky_decompose(cov) * zgp;
   }
 
+  // ───────────────────────────────────────────────────────
+  // Function to test if integer is present in integer array
+  // ───────────────────────────────────────────────────────
+  int in_array(int x, array[] int y) {
+    for (i in 1:size(y)) {
+      if (x == y[i]) {
+        return 1;
+      }
+    }
+    return 0;
+  }
+
 }
 
 data {
@@ -378,13 +390,14 @@ model {
 
 generated quantities {
 
-  // ─────────────────────────────────────────────────────
-  // Initialise linear predictors and yrep variables
-  // ─────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────
+  // Initialise linear predictors, yrep, and log likelihood
+  // ──────────────────────────────────────────────────────
 
   array[N] real mu1;
   array[N] real mu2;
   array[N] real violence;
+  array[N] real log_odds_egalitarianism;
 
   array[N] real temperature_variance_log_centered_rep;
   array[N] real temperature_variance_rep;
@@ -405,10 +418,13 @@ generated quantities {
   array[N] int political_fission_rep;
   array[N] int political_violence_rep;
 
+  matrix[N, 17] lp = rep_matrix(0.0, N, 17);
+  vector[N] log_lik;
+
   for (i in 1:N) {
 
     // ─────────────────────────────────────────────────────
-    // Political violence yrep
+    // Political violence
     // ─────────────────────────────────────────────────────
 
     violence[i] =
@@ -419,13 +435,16 @@ generated quantities {
 
     political_violence_rep[i] = ordered_logistic_rng(violence[i], c1);
 
+    if (in_array(i, idx_violence)) {
+      lp[i, 1] = ordered_logistic_lpmf(political_violence[i] | violence[i], c1);
+    }
+
     // ─────────────────────────────────────────────────────
-    // Egalitarianism yrep
+    // Egalitarianism
     // ─────────────────────────────────────────────────────
 
-    egalitarianism_rep[i] =
-      bernoulli_logit_rng(
-        alpha[1] +
+    log_odds_egalitarianism[i] =
+      alpha[1] +
         beta[6] * climate_variation[i] +
         beta[7] * subsistence[i] +
         beta[8] * scarcity[i] +
@@ -433,11 +452,17 @@ generated quantities {
         beta[10] * public_opinion[i] +
         beta[11] * violence[i] +
         r_phylo[4][i] +
-        r_spatial[4][i]
-      );
+        r_spatial[4][i];
+
+    egalitarianism_rep[i] = bernoulli_logit_rng(log_odds_egalitarianism[i]);
+
+    lp[i, 2] = bernoulli_logit_lpmf(
+      egalitarianism[i] |
+      log_odds_egalitarianism[i]
+    );
 
     // ─────────────────────────────────────────────────────
-    // Climate variability yrep
+    // Climate variability
     // ─────────────────────────────────────────────────────
 
     temperature_variance_log_centered_rep[i] =
@@ -452,24 +477,59 @@ generated quantities {
     mu1[i] = inv_logit(alpha[3] + lambda[1] * climate_variation[i]);
     mu2[i] = inv_logit(alpha[4] + lambda[2] * climate_variation[i]);
 
-    temperature_predict_rep[i] =
-      1.0 - beta_rng(mu1[i] * phi[1] + 1e-06, (1 - mu1[i]) * phi[1] + 1e-06);
+    temperature_predict_rep[i] = 1.0 - beta_rng(
+      mu1[i] * phi[1] + 1e-06,
+      (1 - mu1[i]) * phi[1] + 1e-06
+    );
 
-    precipitation_predict_rep[i] =
-      1.0 - beta_rng(mu2[i] * phi[2] + 1e-06, (1 - mu2[i]) * phi[2] + 1e-06);
+    precipitation_predict_rep[i] = 1.0 - beta_rng(
+      mu2[i] * phi[2] + 1e-06,
+      (1 - mu2[i]) * phi[2] + 1e-06
+    );
+
+    lp[i, 3] = normal_lpdf(
+      temperature_variance_log_centered[i] |
+      alpha[2] + climate_variation[i],
+      sigma
+    );
+
+    lp[i, 4] = beta_lpdf(
+      temperature_unpredict[i] |
+      mu1[i] * phi[1] + 1e-06,
+      (1 - mu1[i]) * phi[1] + 1e-06
+    );
+
+    lp[i, 5] = beta_lpdf(
+      precipitation_unpredict[i] |
+      mu2[i] * phi[2] + 1e-06,
+      (1 - mu2[i]) * phi[2] + 1e-06
+    );
 
     // ─────────────────────────────────────────────────────
-    // Subsistence yrep
+    // Subsistence
     // ─────────────────────────────────────────────────────
 
-    percent_hunting_rep[i] =
-      ordered_logistic_rng(subsistence[i], c2);
+    percent_hunting_rep[i] = ordered_logistic_rng(subsistence[i], c2);
 
     large_game_hunting_rep[i] =
       bernoulli_logit_rng(alpha[5] + lambda[3] * subsistence[i]);
 
     food_sharing_rep[i] =
       ordered_logistic_rng(lambda[4] * subsistence[i], c3);
+
+    lp[i, 6] = ordered_logistic_lpmf(percent_hunting[i] | subsistence[i], c2);
+
+    if (in_array(i, idx_large_game)) {
+      lp[i, 7] = bernoulli_logit_lpmf(
+        large_game_hunting[i] | alpha[5] + lambda[3] * subsistence[i]
+      );
+    }
+
+    if (in_array(i, idx_food_sharing)) {
+      lp[i, 8] = ordered_logistic_lpmf(
+        food_sharing[i] | lambda[4] * subsistence[i], c3
+      );
+    }
 
     // ─────────────────────────────────────────────────────
     // Scarcity yrep
@@ -484,6 +544,24 @@ generated quantities {
     resource_problems_rep[i] =
       ordered_logistic_rng(lambda[6] * scarcity[i], c6);
 
+    if (in_array(i, idx_starvation)) {
+      lp[i, 9] = ordered_logistic_lpmf(
+        starvation_occurrence[i] | scarcity[i], c4
+      );
+    }
+
+    if (in_array(i, idx_famine)) {
+      lp[i, 10] = ordered_logistic_lpmf(
+        famine_occurrence[i] | lambda[5] * scarcity[i], c5
+      );
+    }
+
+    if (in_array(i, idx_resource)) {
+      lp[i, 11] = ordered_logistic_lpmf(
+        resource_problems[i] |lambda[6] * scarcity[i], c6
+      );
+    }
+
     // ─────────────────────────────────────────────────────
     // Public opinion yrep
     // ─────────────────────────────────────────────────────
@@ -496,6 +574,18 @@ generated quantities {
 
     gossip_family_rep[i] =
       bernoulli_logit_rng(alpha[8] + lambda[8] * public_opinion[i]);
+
+    if (in_array(i, idx_gossip)) {
+      lp[i, 12] = bernoulli_logit_lpmf(
+        gossip_government[i] | alpha[6] + public_opinion[i]
+      );
+      lp[i, 13] = bernoulli_logit_lpmf(
+        gossip_politics[i] | alpha[7] + lambda[7] * public_opinion[i]
+      );
+      lp[i, 14] = bernoulli_logit_lpmf(
+        gossip_family[i] | alpha[8] + lambda[8] * public_opinion[i]
+      );
+    }
 
     // ─────────────────────────────────────────────────────
     // Sanctions yrep
@@ -510,6 +600,27 @@ generated quantities {
     political_fission_rep[i] =
       ordered_logistic_rng(lambda[10] * sanctions[i], c9);
 
+    if (in_array(i, idx_checks)) {
+      lp[i, 15] = ordered_logistic_lpmf(
+        checks_power[i] | sanctions[i], c7
+      );
+    }
+
+    if (in_array(i, idx_remove)) {
+      lp[i, 16] = ordered_logistic_lpmf(
+        remove_leaders[i] | lambda[9] * sanctions[i], c8
+      );
+    }
+
+    if (in_array(i, idx_fission)) {
+      lp[i, 17] = ordered_logistic_lpmf(
+        political_fission[i] | lambda[10] * sanctions[i], c9
+      );
+    }
+
   }
+
+  // sum over rows to get one log_lik per society
+  log_lik = lp * rep_vector(1.0, 17);
 
 }

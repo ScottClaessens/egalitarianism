@@ -5,8 +5,8 @@ library(tarchetypes)
 library(tidyverse)
 
 tar_option_set(
-  packages = c("ape", "bayesplot", "patchwork", "phangorn", "rnaturalearth",
-               "scales", "sf", "tidybayes", "tidyverse")
+  packages = c("ape", "bayesplot", "loo", "patchwork", "phangorn",
+               "rnaturalearth", "scales", "sf", "tidybayes", "tidyverse")
 )
 tar_source()
 
@@ -69,7 +69,7 @@ list(
   # run prior only model
   tar_stan_mcmc(
     name = prior,
-    stan_files = "stan/model.stan",
+    stan_files = "stan/model_full.stan",
     data = wrangle_data_list(data, mcc_tree, prior_only = 1),
     parallel_chains = 4,
     adapt_delta = 0.95,
@@ -78,38 +78,70 @@ list(
   # plot prior predictive check
   tar_target(
     plot_prior_check,
-    plot_predictive_check(data, prior_draws_model, prior = TRUE)
+    plot_predictive_check(data, prior_draws_model_full, prior = TRUE)
   ),
   # run simulation validation
   tar_stan_mcmc(
     name = sim,
-    stan_files = "stan/model.stan",
+    stan_files = "stan/model_full.stan",
     data = wrangle_data_list(simulate_data(data), mcc_tree),
     parallel_chains = 4,
     adapt_delta = 0.95,
     seed = 1
   ),
   # plot simulation validation results
-  tar_target(plot_simulation, plot_results(sim_draws_model, simulation = TRUE)),
-  # fit model
+  tar_target(
+    plot_simulation,
+    plot_results(sim_draws_model_full, simulation = TRUE)
+  ),
+  # fit baseline model
   tar_stan_mcmc(
-    name = fit,
-    stan_files = "stan/model.stan",
+    name = fit_baseline,
+    stan_files = "stan/model_baseline.stan",
+    data = wrangle_data_list(data, mcc_tree),
+    parallel_chains = 4,
+    seed = 1
+  ),
+  # fit measurement only model
+  tar_stan_mcmc(
+    name = fit_measurement_only,
+    stan_files = "stan/model_measurement_only.stan",
+    data = wrangle_data_list(data, mcc_tree),
+    parallel_chains = 4,
+    seed = 1
+  ),
+  # fit full model
+  tar_stan_mcmc(
+    name = fit_full,
+    stan_files = "stan/model_full.stan",
     data = wrangle_data_list(data, mcc_tree),
     parallel_chains = 4,
     adapt_delta = 0.95,
     seed = 1
   ),
+  # get loo-cv scores
+  tar_target(
+    fit_baseline_loo_model_baseline,
+    fit_baseline_mcmc_model_baseline$loo()
+  ),
+  tar_target(
+    fit_measurement_only_loo_model_measurement_only,
+    fit_measurement_only_mcmc_model_measurement_only$loo()
+  ),
+  tar_target(
+    fit_full_loo_model_full,
+    fit_full_mcmc_model_full$loo()
+  ),
   # plot model results
-  tar_target(plot_model, plot_results(fit_draws_model)),
+  tar_target(plot_model, plot_results(fit_full_draws_model_full)),
   # plot posterior predictive check
   tar_target(
     plot_posterior_check,
-    plot_predictive_check(data, fit_draws_model)
+    plot_predictive_check(data, fit_full_draws_model_full)
   ),
   # plot total causal effects
   tar_target(
     plot_total,
-    plot_total_causal_effects(fit_draws_model)
+    plot_total_causal_effects(fit_full_draws_model_full)
   )
 )

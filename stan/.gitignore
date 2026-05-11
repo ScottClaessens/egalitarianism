@@ -1,1 +1,3 @@
-model
+model_baseline
+model_measurement_only
+model_full
