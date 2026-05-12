@@ -27,7 +27,8 @@ get_variable_names <- function() {
     "subsistence"            = "Subsistence",
     "sanctions"              = "Sanctions",
     "public_opinion"         = "Public opinion",
-    "scarcity"               = "Resource scarcity"
+    "scarcity"               = "Resource scarcity",
+    "violence"               = "Political violence"
 
   )
 

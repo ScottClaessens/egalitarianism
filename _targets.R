@@ -146,6 +146,11 @@ list(
     plot_total,
     plot_total_causal_effects(fit_full_draws_model_full)
   ),
+  # plot predicted probabilities
+  tar_target(
+    plot_probs,
+    plot_predicted_probabilities(fit_full_draws_model_full)
+  ),
   # produce report
   tar_quarto(report, "quarto/report.qmd", quiet = FALSE),
   # print session info

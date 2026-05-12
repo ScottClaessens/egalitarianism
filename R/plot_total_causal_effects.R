@@ -6,76 +6,33 @@
 #'
 plot_total_causal_effects <- function(draws) {
 
-  # function to calculate probability of egalitarianism
-  # with potential intervention values for latent variables
-  prob <- function(climate_variation = NULL,
-                   public_opinion = NULL,
-                   sanctions = NULL,
-                   subsistence = NULL,
-                   scarcity = NULL,
-                   violence = NULL) {
-
-    with(draws, {
-
-      if (is.null(climate_variation)) {
-        climate_variation <- 0
-      }
-      if (is.null(public_opinion)) {
-        public_opinion <- 0
-      }
-      if (is.null(sanctions)) {
-        sanctions <- 0
-      }
-      if (is.null(subsistence)) {
-        subsistence <-
-          `beta[1]` * climate_variation
-      }
-      if (is.null(scarcity)) {
-        scarcity <-
-          `beta[2]` * climate_variation +
-          `beta[3]` * subsistence
-      }
-      if (is.null(violence)) {
-        violence <-
-          `beta[4]` * sanctions +
-          `beta[5]` * public_opinion
-      }
-
-      # return probability
-      plogis(
-        `alpha[1]` +
-          `beta[6]` * climate_variation +
-          `beta[7]` * subsistence +
-          `beta[8]` * scarcity +
-          `beta[9]` * sanctions +
-          `beta[10]` * public_opinion +
-          `beta[11]` * violence
-      )
-
-    })
-  }
-
   # get total causal effects
   p <-
     tibble(
 
       climate_variation =
-        prob(climate_variation = 1) - prob(climate_variation = 0),
+        predict_intervention(draws, climate_variation = 1) -
+        predict_intervention(draws, climate_variation = 0),
 
       public_opinion =
-        prob(public_opinion = 1) - prob(public_opinion = 0),
+        predict_intervention(draws, public_opinion = 1) -
+        predict_intervention(draws, public_opinion = 0),
 
       sanctions =
-        prob(sanctions = 1) - prob(sanctions = 0),
+        predict_intervention(draws, sanctions = 1) -
+        predict_intervention(draws, sanctions = 0),
 
       subsistence =
-        prob(subsistence = 1) - prob(subsistence = 0),
+        predict_intervention(draws, subsistence = 1) -
+        predict_intervention(draws, subsistence = 0),
 
       scarcity =
-        prob(scarcity = 1) - prob(scarcity = 0),
+        predict_intervention(draws, scarcity = 1) -
+        predict_intervention(draws, scarcity = 0),
 
       political_violence =
-        prob(violence = 1) - prob(violence = 0)
+        predict_intervention(draws, violence = 1) -
+        predict_intervention(draws, violence = 0)
 
     ) |>
     pivot_longer(everything()) |>
