@@ -1,5 +1,6 @@
 # get human readable variable names
 get_variable_names <- function() {
+
   c(
 
     # dplace variables
@@ -29,6 +30,7 @@ get_variable_names <- function() {
     "scarcity"               = "Resource scarcity"
 
   )
+
 }
 
 # helper functions from rethinking package

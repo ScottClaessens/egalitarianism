@@ -6,80 +6,76 @@
 #'
 plot_total_causal_effects <- function(draws) {
 
-  # number of draws
-  n <- nrow(draws)
-
-  # function to simulate probability of egalitarianism
+  # function to calculate probability of egalitarianism
   # with potential intervention values for latent variables
-  sim <- function(climate_variation = NULL,
-                  public_opinion = NULL,
-                  sanctions = NULL,
-                  subsistence = NULL,
-                  scarcity = NULL,
-                  violence = NULL) {
+  prob <- function(climate_variation = NULL,
+                   public_opinion = NULL,
+                   sanctions = NULL,
+                   subsistence = NULL,
+                   scarcity = NULL,
+                   violence = NULL) {
 
     with(draws, {
 
-      withr::with_seed(1, {
+      if (is.null(climate_variation)) {
+        climate_variation <- 0
+      }
+      if (is.null(public_opinion)) {
+        public_opinion <- 0
+      }
+      if (is.null(sanctions)) {
+        sanctions <- 0
+      }
+      if (is.null(subsistence)) {
+        subsistence <-
+          `beta[1]` * climate_variation
+      }
+      if (is.null(scarcity)) {
+        scarcity <-
+          `beta[2]` * climate_variation +
+          `beta[3]` * subsistence
+      }
+      if (is.null(violence)) {
+        violence <-
+          `beta[4]` * sanctions +
+          `beta[5]` * public_opinion
+      }
 
-        # if latent variable is not set to a fixed value, simulate
-        if (is.null(climate_variation)) {
-          climate_variation <- rnorm(n)
-        }
-        if (is.null(public_opinion)) {
-          public_opinion <- rnorm(n)
-        }
-        if (is.null(sanctions)) {
-          sanctions <- rnorm(n)
-        }
-        if (is.null(subsistence)) {
-          subsistence <- rnorm(n, `beta[1]` * climate_variation)
-        }
-        if (is.null(scarcity)) {
-          scarcity <- rnorm(n, `beta[2]` * climate_variation +
-                              `beta[3]` * subsistence)
-        }
-        if (is.null(violence)) {
-          violence <- `beta[4]` * sanctions + `beta[5]` * public_opinion
-        }
-
-        # return probability
-        plogis(
-          `alpha[1]` +
-            `beta[6]` * climate_variation +
-            `beta[7]` * subsistence +
-            `beta[8]` * scarcity +
-            `beta[9]` * sanctions +
-            `beta[10]` * public_opinion +
-            `beta[11]` * violence
-        )
-
-      })
+      # return probability
+      plogis(
+        `alpha[1]` +
+          `beta[6]` * climate_variation +
+          `beta[7]` * subsistence +
+          `beta[8]` * scarcity +
+          `beta[9]` * sanctions +
+          `beta[10]` * public_opinion +
+          `beta[11]` * violence
+      )
 
     })
   }
 
-  # simulate total causal effects
+  # get total causal effects
   p <-
     tibble(
 
       climate_variation =
-        sim(climate_variation = 1) - sim(climate_variation = 0),
+        prob(climate_variation = 1) - prob(climate_variation = 0),
 
       public_opinion =
-        sim(public_opinion = 1) - sim(public_opinion = 0),
+        prob(public_opinion = 1) - prob(public_opinion = 0),
 
       sanctions =
-        sim(sanctions = 1) - sim(sanctions = 0),
+        prob(sanctions = 1) - prob(sanctions = 0),
 
       subsistence =
-        sim(subsistence = 1) - sim(subsistence = 0),
+        prob(subsistence = 1) - prob(subsistence = 0),
 
       scarcity =
-        sim(scarcity = 1) - sim(scarcity = 0),
+        prob(scarcity = 1) - prob(scarcity = 0),
 
       political_violence =
-        sim(violence = 1) - sim(violence = 0)
+        prob(violence = 1) - prob(violence = 0)
 
     ) |>
     pivot_longer(everything()) |>

@@ -50,6 +50,8 @@ list(
       glottolog_languages_url, mcc_tree
     )
   ),
+  # get table of variables
+  tar_target(table_variables, get_table_variables()),
   # plot variable coverage
   tar_target(plot_variable_coverage, plot_coverage(data)),
   # plot variables on world map
@@ -143,5 +145,12 @@ list(
   tar_target(
     plot_total,
     plot_total_causal_effects(fit_full_draws_model_full)
+  ),
+  # produce report
+  tar_quarto(report, "quarto/report.qmd", quiet = FALSE),
+  # print session info
+  tar_target(
+    session_info,
+    writeLines(capture.output(sessionInfo()), "session_info.txt")
   )
 )

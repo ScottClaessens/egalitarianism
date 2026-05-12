@@ -33,7 +33,10 @@ plot_coverage <- function(data) {
       name = " \nNumber of societies\nwith observed data",
       expand = c(0, 0)
     ) +
-    xlab(NULL) +
+    scale_x_discrete(
+      name = NULL,
+      labels = function(x) get_variable_names()[x]
+    ) +
     theme_classic() +
     theme(
       axis.text.x = element_text(
